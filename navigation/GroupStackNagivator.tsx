@@ -9,21 +9,14 @@ export type GroupStackParamList = {
     AddExpense: undefined;
 };
 
-const Stack = createStackNavigator<GroupStackParamList>();
+const GroupStack = createStackNavigator();
 
 export default function GroupStackNavigator() {
     return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen
-                name="GroupDetails"
-                component={GroupDetailsScreen}
-                options={{ title: "Group Details" }}
-            />
-            <Stack.Screen
-                name="AddExpense"
-                component={AddExpenseScreen}
-                options={{ title: "Add Expense" }}
-            />
-        </Stack.Navigator>
+        <GroupStack.Navigator initialRouteName="GroupDetails">
+            {/* <GroupStack.Screen name="Groups" component={GroupsScreen} /> */}
+            <GroupStack.Screen name="GroupDetails" component={GroupDetailsScreen} />
+            <GroupStack.Screen name="AddExpense" component={AddExpenseScreen} />
+        </GroupStack.Navigator>
     );
 }

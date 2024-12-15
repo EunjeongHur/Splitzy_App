@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { fetchGroups, Group, testing } from "../services/apiService";
 
 // Mock 데이터
 const groups = [
@@ -8,26 +10,56 @@ const groups = [
 ];
 
 export default function HomeScreen() {
-    const renderGroup = ({ item }: { item: typeof groups[0] }) => (
+    const [groups, setGroups] = useState<Group[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+
+    // fetch groups from API
+    useEffect(() => {
+        const loadGroups = async () => {
+            try {
+                const data = await fetchGroups();
+                setGroups(data);
+            } catch (error) {
+                console.error("Error fetching groups:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadGroups();
+    }, []);
+
+    useEffect(() => {
+        const loadGroups = async () => {
+            try {
+                const data = await testing();
+
+            } catch (error) {
+                console.error("Error fetching groups:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadGroups();
+    }, []);
+
+    //Render group card
+    const renderGroup = ({ item }: { item: Group }) => (
         <TouchableOpacity style={styles.groupCard}>
             <Text style={styles.groupName}>{item.name}</Text>
             <Text style={styles.groupDetails}>Total: ${item.total}</Text>
-            {item.unsettled > 0 && (
-                <Text style={styles.unsettledText}>Unsettled: ${item.unsettled}</Text>
-            )}
         </TouchableOpacity>
     );
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Text style={styles.title}>Your Groups</Text>
             <FlatList
                 data={groups}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item.id.toString()}
                 renderItem={renderGroup}
             />
             <Button title="Create New Group" onPress={() => { }} />
-        </View>
+        </SafeAreaView>
     );
 }
 
