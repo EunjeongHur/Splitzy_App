@@ -1,7 +1,8 @@
 import React from "react";
-import { SafeAreaView, Text, Button, StyleSheet, Alert } from "react-native";
+import { Text, Button, StyleSheet, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { logout } from "../services/apiService";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen({ onLogout }: { onLogout: () => void }) {
 

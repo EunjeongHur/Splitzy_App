@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { SafeAreaView, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from "react-native";
+import { Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { createGroup, getFriends } from "../services/apiService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FlatList } from "react-native-gesture-handler";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 
 export default function CreateGroupScreen({ navigation }: { navigation: any }) {
@@ -47,13 +48,16 @@ export default function CreateGroupScreen({ navigation }: { navigation: any }) {
                 return;
             }
 
+            let userId = await AsyncStorage.getItem("userId");
+            selectedFriends.push(Number(userId));
+
             const response = await createGroup(groupName, selectedFriends);
             
             if (response.success) {
                 Alert.alert("Success", "Group created successfully!");
                 setgroupName("");
                 setSelectedFriends([]);
-                navigation.navigate("Home");
+                navigation.navigate("Groups", { screen: "GroupLists" });
             } else {
                 throw new Error(response.error);
             }

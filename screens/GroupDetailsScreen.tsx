@@ -1,26 +1,30 @@
-import React, { useState, useEffect } from "react";
-import { SafeAreaView, View, Text, FlatList, Button, StyleSheet, ActivityIndicator } from "react-native";
+import React, { useState, useCallback } from "react";
+import { View, Text, FlatList, Button, StyleSheet, ActivityIndicator } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { fetchGroupDetails } from "../services/apiService";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function GroupDetailsScreen({ route, navigation }: any) {
-    const { groupId, token } = route.params; // Group ID passed from previous screen
+    const { groupId, token } = route.params;
     const [groupDetails, setGroupDetails] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
-    useEffect(() => {
-        const getGroupDetails = async () => {
-            try {
-                const details = await fetchGroupDetails(groupId);
-                setGroupDetails(details);
-            } catch (error) {
-                console.error("Failed to fetch group details:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const getGroupDetails = async () => {
+        try {
+            const details = await fetchGroupDetails(groupId);
+            setGroupDetails(details);
+        } catch (error) {
+            console.error("Failed to fetch group details:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        getGroupDetails();
-    }, [groupId]);
+    useFocusEffect(
+        useCallback(() => {
+            getGroupDetails();
+        }, [])
+    );
 
     const renderExpense = ({ item }: any) => (
         <View style={styles.expenseItem}>
@@ -49,7 +53,7 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
             <Text style={styles.sectionTitle}>Expenses</Text>
             <FlatList
                 data={groupDetails?.expenses}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={(item) => item.expense_id.toString()}
                 renderItem={renderExpense}
                 ListEmptyComponent={<Text>No expenses added yet.</Text>}
             />

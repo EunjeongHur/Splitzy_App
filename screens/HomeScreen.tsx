@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { fetchGroups, Group } from "../services/apiService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -9,25 +10,28 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
     const [loading, setLoading] = useState<boolean>(true);
     const [token, setToken] = useState<string | null>(null);
 
-    useEffect(() => {
-        const loadGroups = async () => {
-            try {
-                let token = await AsyncStorage.getItem("token");
-                if (token) {
-                    const data = await fetchGroups(token);
-                    setGroups(data);
-                    setToken(token);
-                } else {
-                    console.error("Token is null");
-                }
-            } catch (error) {
-                console.error("Error fetching groups:", error);
-            } finally {
-                setLoading(false);
+    const loadGroups = async () => {
+        try {
+            let token = await AsyncStorage.getItem("token");
+            if (token) {
+                const data = await fetchGroups(token);
+                setGroups(data);
+                setToken(token);
+            } else {
+                console.error("Token is null");
             }
-        };
-        loadGroups();
-    }, []);
+        } catch (error) {
+            console.error("Error fetching groups:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            loadGroups();
+        }, [])
+    );
 
     //Render group card
     const renderGroup = ({ item }: { item: Group }) => (

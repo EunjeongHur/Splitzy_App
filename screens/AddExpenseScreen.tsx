@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { SafeAreaView, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import { Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import { addExpense } from "../services/apiService";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AddExpenseScreen({ route, navigation } : any) {
     const { groupId, token } = route.params; // Pass groupId and userId via route parameters

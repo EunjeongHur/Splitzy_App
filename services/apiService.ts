@@ -13,7 +13,6 @@ export const fetchGroups = async (token: string): Promise<Group[]> => {
 				Authorization: `Bearer ${token}`,
 			}
 		});
-		console.log(response.data);
 		return response.data;
 	} catch (error) {
 		console.error("Error fetching groups:", (error as any).message);
@@ -44,12 +43,10 @@ export const createGroup = async (groupName: string, memberIds: number[]) => {
 
 export const getFriends = async (userId: number) => {
 	const response = await api.get(`/friends/${userId}`);
-	console.log(response.data);
 	return response;
 }
 
 export const addExpense = async (group_id: number, token: string, amount: number, description: string) => {
-	console.log(group_id, token, amount, description);
     const response = await api.post(
         "/expenses",
         { group_id, amount, description },
@@ -64,6 +61,5 @@ export const addExpense = async (group_id: number, token: string, amount: number
 
 export const fetchGroupDetails = async (groupId: number) => {
 	const response = await api.get(`/groups/${groupId}`);
-	console.log(response.data);
 	return response.data;
 }

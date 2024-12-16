@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { SafeAreaView, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import { Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { login } from "../services/apiService";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const LoginScreen = ({ navigation, onLogin }: { navigation: any; onLogin: () => void }) => {
     const [email, setEmail] = useState<string>("");
