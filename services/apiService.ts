@@ -6,9 +6,14 @@ export interface Group {
 	total: number;
 }
 
-export const fetchGroups = async (): Promise<Group[]> => {
+export const fetchGroups = async (token: string): Promise<Group[]> => {
 	try {
-		const response = await api.get<Group[]>("/groups");
+		const response = await api.get<Group[]>("/groups", {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			}
+		});
+		console.log(response.data);
 		return response.data;
 	} catch (error) {
 		console.error("Error fetching groups:", (error as any).message);
@@ -16,15 +21,6 @@ export const fetchGroups = async (): Promise<Group[]> => {
 	}
 };
 
-export const testing = async () => {
-	try {
-		const response = await api.get("/testing");
-		// console.log(response.data);
-	} catch (error) {
-		console.error("Error fetching test:", (error as any).message);
-		throw error;
-	}
-};
 
 export const signUp = async (name: string, email: string, password: string) => {
 	const response = await api.post("/auth/signup", { name, email, password });
@@ -45,3 +41,9 @@ export const createGroup = async (groupName: string, memberIds: number[]) => {
 	const response = await api.post("/groups", { groupName, memberIds });
 	return response.data;
 };
+
+export const getFriends = async (userId: number) => {
+	const response = await api.get(`/friends/${userId}`);
+	console.log(response.data);
+	return response;
+}

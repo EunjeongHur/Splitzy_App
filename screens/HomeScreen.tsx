@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { fetchGroups, Group, testing } from "../services/apiService";
+import { fetchGroups, Group } from "../services/apiService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen({ navigation }: { navigation: any }) {
     const [groups, setGroups] = useState<Group[]>([]);
@@ -10,22 +11,13 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
     useEffect(() => {
         const loadGroups = async () => {
             try {
-                const data = await fetchGroups();
-                setGroups(data);
-            } catch (error) {
-                console.error("Error fetching groups:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        loadGroups();
-    }, []);
-
-    useEffect(() => {
-        const loadGroups = async () => {
-            try {
-                const data = await testing();
-
+                let token = await AsyncStorage.getItem("token");
+                if (token) {
+                    const data = await fetchGroups(token);
+                    setGroups(data);
+                } else {
+                    console.error("Token is null");
+                }
             } catch (error) {
                 console.error("Error fetching groups:", error);
             } finally {

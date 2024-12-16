@@ -10,6 +10,8 @@ const LoginScreen = ({ navigation, onLogin }: { navigation: any; onLogin: () => 
     const handleLogin = async () => {
         try {
             const data = await login(email, password);
+            console.log(data);
+            await AsyncStorage.setItem("userId", data.user.id.toString());
             await AsyncStorage.setItem("token", data.token);
             Alert.alert("Success", "Logged in successfully!");
             onLogin();
