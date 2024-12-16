@@ -3,17 +3,10 @@ import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity } from "reac
 import { SafeAreaView } from "react-native-safe-area-context";
 import { fetchGroups, Group, testing } from "../services/apiService";
 
-// Mock 데이터
-const groups = [
-    { id: "1", name: "Trip to Hawaii", total: 500, unsettled: 100 },
-    { id: "2", name: "Roommates Expenses", total: 200, unsettled: 0 },
-];
-
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }: { navigation: any }) {
     const [groups, setGroups] = useState<Group[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
-    // fetch groups from API
     useEffect(() => {
         const loadGroups = async () => {
             try {
@@ -58,7 +51,7 @@ export default function HomeScreen() {
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderGroup}
             />
-            <Button title="Create New Group" onPress={() => { }} />
+            <Button title="Create New Group" onPress={() => navigation.navigate("CreateGroup")} />
         </SafeAreaView>
     );
 }

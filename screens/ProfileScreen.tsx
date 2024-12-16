@@ -1,22 +1,18 @@
 import React from "react";
-import { View, Text, Button, StyleSheet, Alert } from "react-native";
+import { SafeAreaView, Text, Button, StyleSheet, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-// import { RootStackParamList } from "../App";
+import { logout } from "../services/apiService";
 
-// type RootNavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
-export default function ProfileScreen({ navigation }: { navigation: any }) {
-    // const navigation = useNavigation<RootNavigationProp>();
+export default function ProfileScreen({ onLogout }: { onLogout: () => void }) {
 
     const handleLogout = async () => {
         try {
-            await AsyncStorage.removeItem("token");
-            Alert.alert("Logged Out", "You have been logged out successfully.");
-
-            // Navigate to the login screen
-            navigation.navigate("Auth", { screen: "Login" });
+            const result = await logout();
+            if (result) {
+                await AsyncStorage.removeItem("token");
+                Alert.alert("Logged Out", "You have been logged out successfully.");
+                onLogout();
+            }
         } catch (error) {
             console.error("Logout failed:", error);
             Alert.alert("Error", "Failed to log out. Please try again.");
@@ -35,12 +31,11 @@ export default function ProfileScreen({ navigation }: { navigation: any }) {
         );
     };
 
-
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Text style={styles.title}>Profile Screen</Text>
             <Button title="Logout" onPress={confirmLogout} />
-        </View>
+        </SafeAreaView>
     );
 }
 

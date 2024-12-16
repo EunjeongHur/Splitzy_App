@@ -1,10 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import { SafeAreaView, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import { signUp } from "../services/apiService";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-// import { AuthStackParamList } from "../navigation/AuthNavigator";
-
-// type Props = NativeStackScreenProps<AuthStackParamList, "SignUp">;
 
 export default function SignUpScreen({ navigation }: NativeStackScreenProps<any, "SignUp">) {
     const [name, setName] = useState<string>("");
@@ -23,7 +20,7 @@ export default function SignUpScreen({ navigation }: NativeStackScreenProps<any,
     };
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Text style={styles.title}>Sign Up</Text>
             <TextInput
                 style={styles.input}
@@ -51,7 +48,7 @@ export default function SignUpScreen({ navigation }: NativeStackScreenProps<any,
             >
                 Already have an account? Login
             </Text>
-        </View>
+        </SafeAreaView>
     );
 }
 

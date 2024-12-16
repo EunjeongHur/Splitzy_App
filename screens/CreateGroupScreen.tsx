@@ -1,30 +1,46 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-// import api from "../utils/api";
+import { SafeAreaView, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import { createGroup } from "../services/apiService";
+
 
 export default function CreateGroupScreen() {
-    const [name, setName] = useState("");
+    const [groupName, setgroupName] = useState("");
+    const [members, setMembers] = useState("");
 
-    const createGroup = async () => {
+    const handleCreateGroup = async () => {
         try {
-            // await api.post("/groups", { name });
-            alert("Group Created!");
+            if (!groupName.trim()) {
+                Alert.alert("Error", "Group name cannot be empty");
+                return;
+            }
+            const memberIds = members
+                .split(",")
+                .map((id) => id.trim())
+                .filter((id) => !isNaN(Number(id)))
+                .map((id) => Number(id));
+
+            if (memberIds.length === 0) {
+                Alert.alert("Error", "Please provide at least one valid member ID");
+                return;
+            }
+
+            const response = await createGroup(groupName, memberIds);
         } catch (error) {
             console.error("Failed to create group:", error);
         }
     };
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Text style={styles.title}>Create a New Group</Text>
             <TextInput
                 style={styles.input}
                 placeholder="Enter group name"
-                value={name}
-                onChangeText={setName}
+                value={groupName}
+                onChangeText={setgroupName}
             />
-            <Button title="Create" onPress={createGroup} />
-        </View>
+            <Button title="Create" onPress={handleCreateGroup} />
+        </SafeAreaView>
     );
 }
 

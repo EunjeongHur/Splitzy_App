@@ -3,18 +3,13 @@ import { createStackNavigator } from "@react-navigation/stack";
 import GroupDetailsScreen from "../screens/GroupDetailsScreen";
 import CreateGroupScreen from "../screens/CreateGroupScreen";
 import AddExpenseScreen from "../screens/AddExpenseScreen";
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-export type GroupStackParamList = {
-    GroupDetails: undefined;
-    AddExpense: undefined;
-};
+const GroupStack = createNativeStackNavigator();
 
-const GroupStack = createStackNavigator();
-
-export default function GroupStackNavigator() {
+export default function GroupStackNavigator({ navigation, route }: { navigation: any; route: any }) {
     return (
-        <GroupStack.Navigator initialRouteName="GroupDetails">
-            {/* <GroupStack.Screen name="Groups" component={GroupsScreen} /> */}
+        <GroupStack.Navigator initialRouteName="GroupDetails" screenOptions={{ headerShown: false }}>
             <GroupStack.Screen name="GroupDetails" component={GroupDetailsScreen} />
             <GroupStack.Screen name="AddExpense" component={AddExpenseScreen} />
         </GroupStack.Navigator>
