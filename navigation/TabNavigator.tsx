@@ -9,10 +9,10 @@ const Tab = createBottomTabNavigator();
 
 const TabNavigator = ({ onLogout }: { onLogout: () => void }) => {
     return (
-        <Tab.Navigator initialRouteName="Landing" screenOptions={{ headerShown: false }}>
-            <Tab.Screen name="Landing">
+        <Tab.Navigator initialRouteName="Groups" screenOptions={{ headerShown: false }}>
+            {/* <Tab.Screen name="Landing">
                 {(props) => <HomeStackNavigator {...props} />}
-            </Tab.Screen>
+            </Tab.Screen> */}
             <Tab.Screen name="Groups">
                 {(props) => <GroupStackNavigator {...props} />}
             </Tab.Screen>

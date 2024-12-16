@@ -1,27 +1,72 @@
-import React from "react";
-import { View, Text, Button, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import { SafeAreaView, View, Text, FlatList, Button, StyleSheet, ActivityIndicator } from "react-native";
+import { fetchGroupDetails } from "../services/apiService";
 
-export default function GroupDetailsScreen({ navigation }: { navigation: any }) {
+export default function GroupDetailsScreen({ route, navigation }: any) {
+    const { groupId, token } = route.params; // Group ID passed from previous screen
+    const [groupDetails, setGroupDetails] = useState<any>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        const getGroupDetails = async () => {
+            try {
+                const details = await fetchGroupDetails(groupId);
+                setGroupDetails(details);
+            } catch (error) {
+                console.error("Failed to fetch group details:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        getGroupDetails();
+    }, [groupId]);
+
+    const renderExpense = ({ item }: any) => (
+        <View style={styles.expenseItem}>
+            <Text style={styles.expenseTitle}>{item.description}</Text>
+            <Text>${item.amount}</Text>
+            <Text>Paid by: {item.paid_by_name}</Text>
+        </View>
+    );
+
+    if (loading) {
+        return (
+            <View style={styles.container}>
+                <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+        );
+    }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Group Details Screen</Text>
+        <SafeAreaView style={styles.container}>
+            <Text style={styles.title}>{groupDetails?.name}</Text>
+            <Text style={styles.subtitle}>Total Expense: ${groupDetails?.total}</Text>
             <Button
                 title="Add Expense"
-                onPress={() => navigation.navigate("AddExpense")} // 타입 에러 해결
+                onPress={() => navigation.navigate("AddExpense", { groupId, token })}
             />
-        </View>
+            <Text style={styles.sectionTitle}>Expenses</Text>
+            <FlatList
+                data={groupDetails?.expenses}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderExpense}
+                ListEmptyComponent={<Text>No expenses added yet.</Text>}
+            />
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
+    container: { flex: 1, padding: 16 },
+    title: { fontSize: 24, fontWeight: "bold", marginBottom: 8 },
+    subtitle: { fontSize: 18, marginBottom: 16 },
+    sectionTitle: { fontSize: 20, fontWeight: "bold", marginTop: 16, marginBottom: 8 },
+    expenseItem: {
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: "#ccc",
+        marginBottom: 8,
     },
-    title: {
-        fontSize: 24,
-        fontWeight: "bold",
-    },
+    expenseTitle: { fontSize: 16, fontWeight: "bold" },
 });

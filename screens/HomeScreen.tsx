@@ -7,6 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function HomeScreen({ navigation }: { navigation: any }) {
     const [groups, setGroups] = useState<Group[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [token, setToken] = useState<string | null>(null);
 
     useEffect(() => {
         const loadGroups = async () => {
@@ -15,6 +16,7 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
                 if (token) {
                     const data = await fetchGroups(token);
                     setGroups(data);
+                    setToken(token);
                 } else {
                     console.error("Token is null");
                 }
@@ -29,7 +31,10 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
 
     //Render group card
     const renderGroup = ({ item }: { item: Group }) => (
-        <TouchableOpacity style={styles.groupCard}>
+        <TouchableOpacity 
+            style={styles.groupCard} 
+            onPress={() => navigation.navigate("GroupDetails", { groupId: item.id,  token: token})}
+        >
             <Text style={styles.groupName}>{item.name}</Text>
             <Text style={styles.groupDetails}>Total: ${item.total}</Text>
         </TouchableOpacity>
@@ -42,6 +47,7 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
                 data={groups}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderGroup}
+                ListEmptyComponent={<Text>No groups found. Create one!</Text>}
             />
             <Button title="Create New Group" onPress={() => navigation.navigate("CreateGroup")} />
         </SafeAreaView>

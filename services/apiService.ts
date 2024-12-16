@@ -47,3 +47,23 @@ export const getFriends = async (userId: number) => {
 	console.log(response.data);
 	return response;
 }
+
+export const addExpense = async (group_id: number, token: string, amount: number, description: string) => {
+	console.log(group_id, token, amount, description);
+    const response = await api.post(
+        "/expenses",
+        { group_id, amount, description },
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+    return response.data;
+};
+
+export const fetchGroupDetails = async (groupId: number) => {
+	const response = await api.get(`/groups/${groupId}`);
+	console.log(response.data);
+	return response.data;
+}
