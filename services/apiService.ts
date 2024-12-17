@@ -78,3 +78,17 @@ export const settleUp = async (groupId: number, token: string) => {
     });
     return response.data;
 };
+
+export const fetchSettlementDetails = async (groupId: number, token: string) => {
+    const response = await api.get(`/settle/${groupId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+};
+
+export const settleTransaction = async (settlementId: number, token: string) => {
+	const response = await api.put(`/settle/${settlementId}/settle`, {}, {
+		headers: { Authorization: `Bearer ${token}` },
+	});
+	return response.data;
+}
