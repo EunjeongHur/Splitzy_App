@@ -1,24 +1,28 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import HomeStackNavigator from "./HomeStackNavigator";
+// import HomeStackNavigator from "./HomeStackNavigator";
 import GroupStackNavigator from "./GroupStackNagivator";
 import ExpenseSummaryScreen from "../screens/ExpenseSummaryScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import { useAuth } from '../src/context/AuthContext';
 
 const Tab = createBottomTabNavigator();
 
-const TabNavigator = ({ onLogout }: { onLogout: () => void }) => {
+const TabNavigator = () => {
+    const { setToken } = useAuth();
+
+    const handleLogout = () => {
+        setToken(null);
+    }
+
     return (
         <Tab.Navigator initialRouteName="Groups" screenOptions={{ headerShown: false }}>
-            {/* <Tab.Screen name="Landing">
-                {(props) => <HomeStackNavigator {...props} />}
-            </Tab.Screen> */}
             <Tab.Screen name="Groups">
                 {(props) => <GroupStackNavigator {...props} />}
             </Tab.Screen>
             <Tab.Screen name="Summary" component={ExpenseSummaryScreen} />
             <Tab.Screen name="Profile">
-                {(props) => <ProfileScreen {...props} onLogout={onLogout} />}
+                {(props) => <ProfileScreen {...props} onLogout={handleLogout} />}
             </Tab.Screen>
         </Tab.Navigator>
     )

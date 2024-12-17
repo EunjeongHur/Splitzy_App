@@ -16,6 +16,9 @@ export const fetchGroups = async (token: string): Promise<Group[]> => {
 		return response.data;
 	} catch (error) {
 		console.error("Error fetching groups:", (error as any).message);
+		if ((error as any).status === 401) {
+			throw new Error("Unauthorized");
+		}
 		throw error;
 	}
 };
@@ -46,10 +49,10 @@ export const getFriends = async (userId: number) => {
 	return response;
 }
 
-export const addExpense = async (group_id: number, token: string, amount: number, description: string) => {
+export const addExpense = async (group_id: number, token: string, amount: number, description: string, selectedPaidBy: number) => {
     const response = await api.post(
         "/expenses",
-        { group_id, amount, description },
+        { group_id, amount, description, selectedPaidBy },
         {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -63,3 +66,15 @@ export const fetchGroupDetails = async (groupId: number) => {
 	const response = await api.get(`/groups/${groupId}`);
 	return response.data;
 }
+
+export const fetchGroupMembers = async (groupId: number) => {
+	const response = await api.get(`/groups/${groupId}/members`);
+	return response.data.members;
+}
+
+export const settleUp = async (groupId: number, token: string) => {
+    const response = await api.get(`/settle/${groupId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+};

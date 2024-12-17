@@ -1,27 +1,26 @@
 import React, { useCallback, useState } from "react";
-import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, Button, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { fetchGroups, Group } from "../services/apiService";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "../src/context/AuthContext";
 
 export default function HomeScreen({ navigation }: { navigation: any }) {
     const [groups, setGroups] = useState<Group[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [token, setToken] = useState<string | null>(null);
-
+    const { token, setToken } = useAuth();
     const loadGroups = async () => {
         try {
-            let token = await AsyncStorage.getItem("token");
             if (token) {
                 const data = await fetchGroups(token);
                 setGroups(data);
-                setToken(token);
             } else {
                 console.error("Token is null");
+                setToken(null);
             }
         } catch (error) {
             console.error("Error fetching groups:", error);
+            setToken(null);
         } finally {
             setLoading(false);
         }

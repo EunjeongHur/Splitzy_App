@@ -12,7 +12,7 @@ export default function SignUpScreen({ navigation }: NativeStackScreenProps<any,
         try {
             const response = await signUp(name, email, password);
             Alert.alert("Success", response.message);
-            navigation.navigate("Login"); // 회원가입 후 로그인 화면으로 이동
+            navigation.navigate("Login");
         } catch (error: any) {
             console.error("Signup failed:", error.message);
             Alert.alert("Error", error.response?.data?.error || "Failed to sign up.");

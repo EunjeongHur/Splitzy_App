@@ -57,6 +57,10 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
                 renderItem={renderExpense}
                 ListEmptyComponent={<Text>No expenses added yet.</Text>}
             />
+            <Button 
+                title="Settle Up" 
+                onPress={() => navigation.navigate("SettleUp", { groupId, token })} 
+            />
         </SafeAreaView>
     );
 }
@@ -73,4 +77,5 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     expenseTitle: { fontSize: 16, fontWeight: "bold" },
+    settlementItem: { padding: 8, borderBottomWidth: 1, borderColor: "#ccc" },
 });

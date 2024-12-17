@@ -5,11 +5,11 @@ import SignUpScreen from "../screens/SignUpScreen";
 
 const AuthStack = createNativeStackNavigator();
 
-const AuthNavigator = ({ onLogin }: { onLogin: () => void }) => {
+const AuthNavigator = () => {
     return (
         <AuthStack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
             <AuthStack.Screen name="Login" options={{ headerShown: false }}>
-                {(props) => <LoginScreen {...props} onLogin={onLogin} />}
+                {(props) => <LoginScreen {...props} />}
             </AuthStack.Screen>
             <AuthStack.Screen name="SignUp" options={{ headerShown: false }}>
                 {(props) => <SignUpScreen {...props} />}
