@@ -1,68 +1,58 @@
 import React, { useState, useEffect } from "react";
-import { Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from "react-native";
-import { createGroup, getFriends } from "../services/apiService";
+import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from "react-native";
+import {  searchUsers, sendGroupInvitation} from "../services/apiService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FlatList } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "../src/context/AuthContext";
 
 
 export default function CreateGroupScreen({ navigation }: { navigation: any }) {
     const [groupName, setgroupName] = useState("");
-    const [friends, setFriends] = useState<{ friend_id: number; friend_name: string }[]>([]);
-    const [selectedFriends, setSelectedFriends] = useState<number[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [selectedUsers, setSelectedUsers] = useState<any[]>([])
+    const { token } = useAuth();
 
-    useEffect(() => {
-        const fetchFriends = async () => {
-            try { 
-                let userId = await AsyncStorage.getItem("userId");
-                const response = await getFriends(Number(userId));
-                if (response.data.success) {
-                    setFriends(response.data.result);
-                } else {
-                    throw new Error(response.data.error);
-                }
-            } catch (error) {
-                console.error("Failed to fetch friends:", error);
-                Alert.alert("Error", "Failed to fetch friends. Please try again later.");
-            }
-        };
+    const handleSearch = async () => {
+        if (!token || !searchQuery) {
+            console.error("Token is null");
+            return;
+        }
+        try {
+            const results = await searchUsers(token, searchQuery);
+            const filteredResults = results.filter(
+                (result: any) => !selectedUsers.some((user) => user.id === result.id)
+            );
+            setSearchResults(filteredResults);
+        } catch (error) {
+            console.error("Error searching users:", error);
+        }
+    };
 
-        fetchFriends();
-    }, []);
+    const handleAddUser = (user: any) => {
+        setSelectedUsers([...selectedUsers, user]);
+        setSearchResults(searchResults.filter((u) => u.id !== user.id));
+    };
 
-    const handleSelectFriend = (friendId: number) => {
-        setSelectedFriends((prev) =>
-            prev.includes(friendId) ? prev.filter((id) => id !== friendId) : [...prev, friendId]
-        );
-    }
+    const handleRemoveUser = (userId: number) => {
+        const updatedSelectedUsers = selectedUsers.filter((user) => user.id !== userId);
+        setSelectedUsers(updatedSelectedUsers);
+    };
 
     const handleCreateGroup = async () => {
+        if (!groupName || selectedUsers.length === 0 || !token) {
+            Alert.alert("Error", "Please enter a group name and select at least one member.");
+            return;
+        }
+
         try {
-            if (!groupName.trim()) {
-                Alert.alert("Error", "Group name cannot be empty");
-                return;
-            }
-
-            if (selectedFriends.length === 0) {
-                Alert.alert("Error", "Please select at least one member");
-                return;
-            }
-
-            let userId = await AsyncStorage.getItem("userId");
-            selectedFriends.push(Number(userId));
-
-            const response = await createGroup(groupName, selectedFriends);
             
-            if (response.success) {
-                Alert.alert("Success", "Group created successfully!");
-                setgroupName("");
-                setSelectedFriends([]);
-                navigation.navigate("Groups", { screen: "GroupLists" });
-            } else {
-                throw new Error(response.error);
-            }
+            await sendGroupInvitation(token, groupName, selectedUsers.map((user) => user.id));
+            alert("Group Created and Invitations Sent!");
+            navigation.goBack();
         } catch (error) {
-            console.error("Failed to create group:", error);
+            console.error("Error creating group:", error);
         }
     };
 
@@ -76,21 +66,30 @@ export default function CreateGroupScreen({ navigation }: { navigation: any }) {
                 onChangeText={setgroupName}
             />
             <Text style={styles.subtitle}>Select Members</Text>
+            <TextInput
+                placeholder="Search users by username or email"
+                style={styles.input}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={handleSearch}
+            />
             <FlatList
-                data={friends}
-                keyExtractor={(item) => item.friend_id.toString()}
+                data={searchResults}
+                keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
-                    <TouchableOpacity
-                        style={[
-                            styles.friendItem,
-                            selectedFriends.includes(item.friend_id) && styles.friendItemSelected,
-                        ]}
-                        onPress={() => handleSelectFriend(item.friend_id)}
-                    >
-                        <Text style={styles.friendName}>{item.friend_name}</Text>
+                    <TouchableOpacity style={styles.userItem} onPress={() => handleAddUser(item)}>
+                        <Text>{item.username} • {item.fname} {item.lname}</Text>
+                        <Button title="Add" onPress={() => handleAddUser(item)} />
                     </TouchableOpacity>
                 )}
             />
+            <Text style={styles.sectionTitle}>Selected Users</Text>
+            {selectedUsers.map((user) => (
+                <View key={user.id} style={styles.selectedUserItem}>
+                    <Text>{user.username} • {user.fname} {user.lname}</Text>
+                    <Button title="Remove" onPress={() => handleRemoveUser(user.id)} />
+                </View>
+            ))}
             <Button title="Create Group" onPress={handleCreateGroup} />
         </SafeAreaView>
     );
@@ -106,18 +105,14 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 16,
     },
-    friendItem: {
-        padding: 12,
-        borderWidth: 1,
+
+    userItem: { flexDirection: "row", justifyContent: "space-between", padding: 8 },
+    sectionTitle: { fontSize: 16, fontWeight: "bold", marginTop: 10 },
+    selectedUserItem: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        padding: 8,
+        borderBottomWidth: 1,
         borderColor: "#ccc",
-        borderRadius: 8,
-        marginBottom: 8,
-    },
-    friendItemSelected: {
-        backgroundColor: "#cce5ff",
-        borderColor: "#007bff",
-    },
-    friendName: {
-        fontSize: 16,
     },
 });

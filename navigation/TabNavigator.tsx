@@ -1,6 +1,6 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-// import HomeStackNavigator from "./HomeStackNavigator";
+import InvitationScreen from "../screens/InvitationScreen";
 import GroupStackNavigator from "./GroupStackNagivator";
 import ExpenseSummaryScreen from "../screens/ExpenseSummaryScreen";
 import ProfileScreen from "../screens/ProfileScreen";
@@ -21,6 +21,7 @@ const TabNavigator = () => {
                 {(props) => <GroupStackNavigator {...props} />}
             </Tab.Screen>
             <Tab.Screen name="Summary" component={ExpenseSummaryScreen} />
+            <Tab.Screen name="Invitation" component={InvitationScreen} />
             <Tab.Screen name="Profile">
                 {(props) => <ProfileScreen {...props} onLogout={handleLogout} />}
             </Tab.Screen>

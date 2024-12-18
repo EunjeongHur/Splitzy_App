@@ -1,16 +1,19 @@
 import React, { useState } from "react";
-import { SafeAreaView, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import { Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import { signUp } from "../services/apiService";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignUpScreen({ navigation }: NativeStackScreenProps<any, "SignUp">) {
-    const [name, setName] = useState<string>("");
+    const [fname, setfName] = useState<string>("");
+    const [lname, setlName] = useState<string>("");
+    const [username, setUsername] = useState<string>("");
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
 
     const handleSignUp = async () => {
         try {
-            const response = await signUp(name, email, password);
+            const response = await signUp(fname, lname, username, email, password);
             Alert.alert("Success", response.message);
             navigation.navigate("Login");
         } catch (error: any) {
@@ -24,9 +27,21 @@ export default function SignUpScreen({ navigation }: NativeStackScreenProps<any,
             <Text style={styles.title}>Sign Up</Text>
             <TextInput
                 style={styles.input}
-                placeholder="Name"
-                value={name}
-                onChangeText={setName}
+                placeholder="First Name"
+                value={fname}
+                onChangeText={setfName}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Last Name"
+                value={lname}
+                onChangeText={setlName}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Username"
+                value={username}
+                onChangeText={setUsername}
             />
             <TextInput
                 style={styles.input}
