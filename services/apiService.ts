@@ -119,6 +119,13 @@ export const settleTransaction = async (settlementId: number, token: string) => 
 	return response.data;
 }
 
+export const undoTransaction = async (settlementId: number, token: string) => {
+	const response = await api.put(`/settle/${settlementId}/undo`, {}, {
+		headers: { Authorization: `Bearer ${token}` },
+	});
+	return response.data;
+}
+
 /* Invitation API */
 // Fetch Invitations
 export const fetchInvitations = async (token: string) => {

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { TextInput, Button, Text, Title } from "react-native-paper";
 import { signUp } from "../services/apiService";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignUpScreen({ navigation }: NativeStackScreenProps<any, "SignUp">) {
     const [fname, setfName] = useState<string>("");
@@ -24,52 +25,107 @@ export default function SignUpScreen({ navigation }: NativeStackScreenProps<any,
 
     return (
         <SafeAreaView style={styles.container}>
-            <Text style={styles.title}>Sign Up</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="First Name"
-                value={fname}
-                onChangeText={setfName}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Last Name"
-                value={lname}
-                onChangeText={setlName}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Username"
-                value={username}
-                onChangeText={setUsername}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Password"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-            />
-            <Button title="Sign Up" onPress={handleSignUp} />
-            <Text
-                style={styles.link}
-                onPress={() => navigation.navigate("Login")}
-            >
-                Already have an account? Login
-            </Text>
+            <View style={styles.card}>
+                <Title style={styles.title}>Sign Up</Title>
+                <TextInput
+                    label="First Name"
+                    value={fname}
+                    onChangeText={setfName}
+                    mode="outlined"
+                    style={styles.input}
+                />
+                <TextInput
+                    label="Last Name"
+                    value={lname}
+                    onChangeText={setlName}
+                    mode="outlined"
+                    style={styles.input}
+                />
+                <TextInput
+                    label="Username"
+                    value={username}
+                    onChangeText={setUsername}
+                    mode="outlined"
+                    style={styles.input}
+                />
+                <TextInput
+                    label="Email"
+                    value={email}
+                    onChangeText={setEmail}
+                    mode="outlined"
+                    keyboardType="email-address"
+                    style={styles.input}
+                />
+                <TextInput
+                    label="Password"
+                    secureTextEntry
+                    value={password}
+                    onChangeText={setPassword}
+                    mode="outlined"
+                    style={styles.input}
+                />
+                <Button
+                    mode="contained"
+                    onPress={handleSignUp}
+                    style={styles.button}
+                    labelStyle={styles.buttonText}
+                >
+                    Sign Up
+                </Button>
+                <Text
+                    style={styles.link}
+                    onPress={() => navigation.navigate("Login")}
+                >
+                    Already have an account? <Text style={styles.linkText}>Login</Text>
+                </Text>
+            </View>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 16 },
-    title: { fontSize: 24, fontWeight: "bold", marginBottom: 16 },
-    input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 12, marginBottom: 16 },
-    link: { color: "#007BFF", marginTop: 16, textAlign: "center" },
+    container: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 16,
+        backgroundColor: "#f5f5f5",
+    },
+    card: {
+        width: "90%",
+        padding: 20,
+        borderRadius: 10,
+        backgroundColor: "#fff",
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 5,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: "bold",
+        textAlign: "center",
+        marginBottom: 20,
+    },
+    input: {
+        marginBottom: 16,
+    },
+    button: {
+        marginTop: 10,
+        paddingVertical: 8,
+        borderRadius: 5,
+    },
+    buttonText: {
+        fontSize: 16,
+    },
+    link: {
+        textAlign: "center",
+        marginTop: 20,
+        fontSize: 16,
+        color: "#757575",
+    },
+    linkText: {
+        color: "#6200ee",
+        fontWeight: "bold",
+    },
 });

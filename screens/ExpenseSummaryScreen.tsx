@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ActivityIndicator, Button, Alert, FlatList } fr
 import { useFocusEffect } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { fetchSettlementDetails, fetchGroups, settleTransaction } from "../services/apiService";
+import { fetchSettlementDetails, fetchGroups, settleTransaction, undoTransaction } from "../services/apiService";
 import { useAuth } from "../src/context/AuthContext";
 
 
@@ -52,22 +52,31 @@ export default function ExpenseSummaryScreen({ route, navigation }: any) {
         loadSettlements();
     }, [selectedGroupId]);
 
-    const handleSettleItem = async (settlementId: number) => {
+    const handleSettleItem = async (settlementId: number, isSettled: boolean) => {
         try {
             if (!token) {
                 console.error("Token is null");
                 return;
-            } 
-            await settleTransaction(settlementId, token);
+            }
+    
+            if (isSettled) {
+                // Undo settle
+                await undoTransaction(settlementId, token);
+                Alert.alert("Success", "Transaction marked as unsettled!");
+            } else {
+                // Settle
+                await settleTransaction(settlementId, token);
+                Alert.alert("Success", "Transaction marked as settled!");
+            }
+    
             setSettlements((prevSettlements) =>
                 prevSettlements.map((s) =>
-                    s.id === settlementId ? { ...s, is_settled: 1 } : s
+                    s.id === settlementId ? { ...s, is_settled: isSettled ? 0 : 1 } : s
                 )
             );
-            Alert.alert("Success", "Transaction marked as settled!");
         } catch (error) {
-            console.error("Failed to settle transaction:", error);
-            Alert.alert("Error", "Could not mark the transaction as settled.");
+            console.error("Failed to process transaction:", error);
+            Alert.alert("Error", "Could not update the transaction.");
         }
     };
 
@@ -77,9 +86,8 @@ export default function ExpenseSummaryScreen({ route, navigation }: any) {
                 {item.from_user_name} → {item.to_user_name}: ${item.amount}
             </Text>
             <Button
-                title={item.is_settled ? "Settled" : "Settle"}
-                onPress={() => handleSettleItem(item.id)}
-                disabled={item.is_settled ? true : false}
+                title={item.is_settled ? "Undo" : "Settle"}
+                onPress={() => handleSettleItem(item.id, item.is_settled)}
             />
         </View>
     );
