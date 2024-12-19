@@ -3,6 +3,8 @@ import { View, Text, FlatList, Button, StyleSheet, ActivityIndicator } from "rea
 import { useFocusEffect } from "@react-navigation/native";
 import { fetchGroupDetails } from "../services/apiService";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Appbar } from 'react-native-paper';
+
 
 export default function GroupDetailsScreen({ route, navigation }: any) {
     const { groupId, token } = route.params;
@@ -43,7 +45,12 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
     }
 
     return (
-        <SafeAreaView style={styles.container}>
+        
+        <View>
+            <Appbar.Header style={{backgroundColor: '#ffffff'}}>
+                <Appbar.BackAction onPress={() => navigation.goBack()} />
+            {/* <Appbar.BackAction onPress={() => {}} /> */}
+            </Appbar.Header>
             <Text style={styles.title}>{groupDetails?.name}</Text>
             <Text style={styles.subtitle}>Total Expense: ${groupDetails?.total}</Text>
             <Button
@@ -57,7 +64,7 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
                 renderItem={renderExpense}
                 ListEmptyComponent={<Text>No expenses added yet.</Text>}
             />
-        </SafeAreaView>
+        </View>
     );
 }
 
