@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Alert, FlatList } from "react-native";
 import { addExpense, fetchGroupMembers } from "../services/apiService";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Picker } from "@react-native-picker/picker";
 import { Appbar, Text, TextInput, Button, ActivityIndicator, Card, Menu, IconButton, List } from "react-native-paper";
+import colors from "../utils/colors";
 
 export default function AddExpenseScreen({ route, navigation }: any) {
     const { groupId, token } = route.params;
@@ -64,9 +63,10 @@ export default function AddExpenseScreen({ route, navigation }: any) {
 
     return (
         <View style={styles.container}>
-            <Appbar.Header style={{ backgroundColor: "#ffffff" }}>
-                <Appbar.BackAction onPress={() => navigation.goBack()} />
-                <Appbar.Content title="Group Details" />
+            <Appbar.Header style={{ backgroundColor: colors.white }}>
+                <View style={styles.iconBackgroundContainer}>
+                    <Appbar.BackAction color={colors.black} onPress={() => navigation.goBack()} />
+                </View>
             </Appbar.Header>
             <View style={styles.card}>
                 <View style={styles.cardContent}>
@@ -79,7 +79,7 @@ export default function AddExpenseScreen({ route, navigation }: any) {
                         value={description}
                         onChangeText={setDescription}
                         style={styles.input}
-                        theme={{ colors: { primary: "#282a35" } }}
+                        theme={{ colors: { primary: colors.black } }}
                     />
                     <TextInput
                         label="Amount"
@@ -90,7 +90,12 @@ export default function AddExpenseScreen({ route, navigation }: any) {
                         style={styles.input}
                         theme={{ colors: { primary: "#282a35" } }}
                     />
-                    <Text style={styles.label}>Paid By</Text>
+                    <Text
+                        variant="labelLarge"
+                        style={styles.label}
+                    >
+                        Paid By
+                    </Text>
                     <List.Accordion
                         theme={{ colors: { primary: "#282a35" } }}
                         title={
@@ -123,12 +128,17 @@ export default function AddExpenseScreen({ route, navigation }: any) {
                         </View>
                     </List.Accordion>
                 </View>
-                <View style={styles.ButtonArea}>
+                <View style={styles.addButtonContainer}>
                     <Button
                         mode="contained"
                         onPress={handleAddExpense}
-                        style={styles.addButton}
-                        contentStyle={styles.addButtonContent}
+                        disabled={!description.trim() || !amount.trim() || !selectedPaidBy}
+                        theme={{
+                            colors: {
+                                primary: colors.primary,
+                                onPrimary: colors.secondary,
+                            }
+                        }}
                     >
                         Add Expense
                     </Button>
@@ -143,13 +153,24 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#ffffff",
     },
+    iconBackgroundContainer: {
+        backgroundColor: colors.primary,
+        borderRadius: 25,
+        width: 40,
+        height: 40,
+        justifyContent: "center",
+        alignItems: "center",
+        margin: 8,
+    },
     loaderContainer: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
     },
     card: {
-        margin: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        backgroundColor: colors.white,
         flex: 1,
     },
     cardContent: {
@@ -166,12 +187,13 @@ const styles = StyleSheet.create({
         backgroundColor: "#ffffff",
     },
     label: {
-        fontSize: 16,
         fontWeight: "bold",
-        marginBottom: 8,
+        marginLeft: 5,
     },
     accordion: {
         borderRadius: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: "#282a35",
     },
     selectedItem: {
         backgroundColor: "#e8f4ff",
@@ -190,9 +212,10 @@ const styles = StyleSheet.create({
         maxHeight: 250,
         backgroundColor: "#0077b6",
     },
-    ButtonArea: {
+    addButtonContainer: {
         flex: 1,
         justifyContent: "flex-end",
         marginBottom: 5,
+        backgroundColor: colors.white,
     },
 });

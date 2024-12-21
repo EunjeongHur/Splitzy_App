@@ -113,7 +113,30 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
                     data={groupDetails?.expenses}
                     keyExtractor={(item) => item.expense_id.toString()}
                     renderItem={renderExpense}
-                    ListEmptyComponent={<Text>No expenses added yet.</Text>}
+                    ListEmptyComponent={
+                        <View style={styles.noExpensesContainer}>
+                            <Text
+                                variant="headlineMedium"
+                                style={styles.noExpensesText}
+                            >
+                                {"No expenses yet!\nTap the button to get started."}
+                            </Text>
+                            <Button
+                                mode="contained"
+                                onPress={() => navigation.navigate("AddExpense", { groupId, token })}
+                                style={styles.addExpenseButton2}
+                                theme={{
+                                    colors: {
+                                        primary: colors.primary,
+                                        onPrimary: colors.tertiary,
+                                    }
+                                }}
+                            >
+                                Add Expense
+                            </Button>
+                        </View>
+                    }
+                    contentContainerStyle={{ flexGrow: 1 }}
                 />
             </View>
         </View>
@@ -123,12 +146,23 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fafafa",
+        backgroundColor: colors.white,
     },
     loaderContainer: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
+    },
+    noExpensesContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    noExpensesText: {
+        fontSize: 20,
+        color: colors.secondary,
+        fontWeight: "bold",
+        textAlign: "center",
     },
     AppBarHeader: {
         backgroundColor: colors.tertiary,
@@ -156,6 +190,10 @@ const styles = StyleSheet.create({
     addExpenseButton: {
         marginTop: 16,
         backgroundColor: colors.primary,
+    },
+    addExpenseButton2: {
+        marginTop: 16,
+        backgroundColor: colors.secondary,
     },
     sectionTitle: {
         textAlign: "center",
