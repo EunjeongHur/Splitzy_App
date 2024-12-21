@@ -18,31 +18,32 @@ const TabNavigator = () => {
 
     return (
         <Tab.Navigator
-                screenOptions={({ route }) => ({
-                    tabBarIcon: ({ focused, color, size }) => {
-                        let iconName: string = "";
-                        if (route.name === "Groups") {
-                            iconName = focused ? "home" : "home-outline";
-                        } else if (route.name === "Summary") {
-                            iconName = focused ? "list" : "list-outline";
-                        } else if (route.name === "Invitation") {
-                            iconName = focused ? "mail" : "mail-outline";
-                        } else if (route.name === "Profile") {
-                            iconName = focused ? "person" : "person-outline";
-                        }
-                        return <Ionicons name={iconName} size={size} color={color} />;
-                    },
-                    tabBarActiveTintColor: "#6200ee",
-                    tabBarInactiveTintColor: "gray",
-                    tabBarStyle: {
-                        backgroundColor: "#f5f5f5", 
-                        paddingBottom: 8,
-                        height: 60,
-                    },
-                    headerShown: false,
-                })}
-            >
-            <Tab.Screen name="Groups">
+            screenOptions={({ route }) => ({
+                tabBarIcon: ({ focused, color, size }) => {
+                    let iconName: string = "";
+                    if (route.name === "Home") {
+                        iconName = focused ? "home" : "home-outline";
+                    } else if (route.name === "Summary") {
+                        iconName = focused ? "list" : "list-outline";
+                    } else if (route.name === "Invitation") {
+                        iconName = focused ? "mail" : "mail-outline";
+                    } else if (route.name === "Profile") {
+                        iconName = focused ? "person" : "person-outline";
+                    }
+                    return <Ionicons name={iconName} size={size} color={color} />;
+                },
+                tabBarActiveTintColor: "#282a35",
+                tabBarInactiveTintColor: "gray",
+                tabBarStyle: {
+                    backgroundColor: "#ffffff",
+                    paddingBottom: 4,
+                    paddingTop: 4,
+                    height: 60,
+                },
+                headerShown: false,
+            })}
+        >
+            <Tab.Screen name="Home">
                 {(props) => <GroupStackNavigator {...props} />}
             </Tab.Screen>
             <Tab.Screen name="Summary" component={ExpenseSummaryScreen} />

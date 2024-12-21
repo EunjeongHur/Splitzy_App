@@ -1,15 +1,17 @@
 import React, { useState, useCallback } from "react";
-import { View,  FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import { View, FlatList, StyleSheet, ActivityIndicator } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { fetchGroupDetails } from "../services/apiService";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Appbar, Card, Text, Button } from 'react-native-paper';
+import { Appbar, Text, Button, Divider } from 'react-native-paper';
+import colors from "../utils/colors";
+import { Platform } from "react-native";
 
 
 export default function GroupDetailsScreen({ route, navigation }: any) {
     const { groupId, token } = route.params;
     const [groupDetails, setGroupDetails] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const MORE_ICON = Platform.OS === 'ios' ? 'dots-horizontal' : 'dots-vertical';
 
     const getGroupDetails = async () => {
         try {
@@ -28,17 +30,27 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
         }, [])
     );
 
-    const renderExpense = ({ item }: any) => (
-        <Card style={styles.expenseCard}>
-            <Card.Content>
-                <Text variant="titleMedium" style={styles.expenseTitle}>
-                    {item.description}
-                </Text>
-                <Text>Amount: ${item.amount}</Text>
-                <Text>Paid by: {item.paid_by_name}</Text>
-            </Card.Content>
-        </Card>
-    );
+
+    const renderExpense = ({ item, index }: any) => {
+        const isNewDay =
+            index === 0 ||
+            groupDetails.expenses[index - 1].date !== item.date;
+
+        return (
+            <View style={styles.expenseSection}>
+                {isNewDay && (
+                    <>
+                        <Text style={styles.dateText}>{item.date}</Text>
+                        <Divider style={{ backgroundColor: colors.black }} />
+                    </>
+                )}
+                <View style={styles.expenseCard}>
+                    <Text style={styles.paidBy}>{item.paid_by_name}</Text>
+                    <Text style={styles.amount}>${item.amount}</Text>
+                </View>
+            </View>
+        );
+    };
 
     if (loading) {
         return (
@@ -50,33 +62,53 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
 
     return (
         <View style={styles.container}>
-            <Appbar.Header style={{ backgroundColor: "#ffffff" }}>
-                <Appbar.BackAction onPress={() => navigation.goBack()} />
-                <Appbar.Content title="Group Details" />
+            {/* App bar section */}
+            <Appbar.Header style={styles.AppBarHeader}>
+                <Appbar.BackAction
+                    onPress={() => navigation.goBack()}
+                />
+                <Appbar.Action
+                    icon={MORE_ICON}
+                    onPress={() => console.log("More options")}
+                />
             </Appbar.Header>
-            <View style={styles.content}>
-                <Card style={styles.groupInfoCard}>
-                    <Card.Content>
-                        <Text variant="headlineMedium" style={styles.title}>
-                            {groupDetails?.name}
-                        </Text>
-                        <Text variant="bodyLarge" style={styles.subtitle}>
-                            Total Expense: ${groupDetails?.total}
-                        </Text>
-                        <Button
-                            mode="contained"
-                            onPress={() => navigation.navigate("AddExpense", { groupId, token })}
-                            style={styles.addExpenseButton}
-                        >
-                            Add Expense
-                        </Button>
-                    </Card.Content>
-                </Card>
 
-                <Text variant="titleLarge" style={styles.sectionTitle}>
-                    Expenses
-                </Text>
+            {/* Group Info section */}
+            <View style={styles.groupInfoSection}>
+                <View style={styles.groupInfoCard}>
+                    <Text variant="displaySmall" style={styles.title}>
+                        ${groupDetails?.total}
+                    </Text>
+                    <Text variant="bodyLarge" style={styles.subtitle}>
+                        {groupDetails?.name}
+                    </Text>
 
+                    <Button
+                        mode="contained"
+                        onPress={() => navigation.navigate("AddExpense", { groupId, token })}
+                        style={styles.addExpenseButton}
+                        theme={{
+                            colors: {
+                                primary: colors.primary,
+                                onPrimary: colors.secondary,
+                            }
+                        }}
+                    >
+                        Add Expense
+                    </Button>
+
+                </View>
+
+                <View>
+                    <Divider style={{ backgroundColor: colors.black }} />
+                    <Text variant="bodySmall" style={styles.sectionTitle}>
+                        Expenses
+                    </Text>
+                </View>
+            </View>
+
+            {/* Expenses section */}
+            <View style={styles.listContainer}>
                 <FlatList
                     data={groupDetails?.expenses}
                     keyExtractor={(item) => item.expense_id.toString()}
@@ -98,43 +130,66 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    content: {
-        flex: 1,
-        padding: 16,
+    AppBarHeader: {
+        backgroundColor: colors.tertiary,
+        justifyContent: "space-between",
+    },
+    groupInfoSection: {
+        flex: 0.5,
+        backgroundColor: colors.tertiary,
+        paddingLeft: 5,
+        paddingRight: 5,
+        justifyContent: "space-between",
     },
     groupInfoCard: {
-        marginBottom: 16,
-        backgroundColor: "#ffffff",
-        borderRadius: 8,
-        elevation: 2,
+        alignItems: "center",
     },
     title: {
         fontWeight: "bold",
-        marginBottom: 8,
-        color: "#333",
+        marginBottom: 4,
+        color: colors.black,
     },
     subtitle: {
-        marginBottom: 16,
-        color: "#555",
+        marginBottom: 10,
+        color: colors.black,
     },
     addExpenseButton: {
         marginTop: 16,
-        backgroundColor: "#0077b6",
+        backgroundColor: colors.primary,
     },
     sectionTitle: {
+        textAlign: "center",
+        textDecorationLine: "underline",
         fontWeight: "bold",
-        marginVertical: 16,
-        color: "#333",
+        marginVertical: 14,
+        color: colors.secondary,
+    },
+    listContainer: {
+        flex: 1,
+    },
+    dateText: {
+        fontSize: 14,
+        color: colors.gray,
+        marginVertical: 8,
     },
     expenseCard: {
-        marginVertical: 8,
-        backgroundColor: "#ffffff",
-        borderRadius: 8,
-        elevation: 2,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginVertical: 20,
+        paddingLeft: 10,
+        paddingRight: 10,
     },
-    expenseTitle: {
+    expenseSection: {
+        marginHorizontal: 16,
+        backgroundColor: colors.white,
+    },
+    paidBy: {
+        fontSize: 18,
+        color: colors.black,
+    },
+    amount: {
         fontWeight: "bold",
-        marginBottom: 8,
-        color: "#333",
+        fontSize: 18,
+        color: colors.black,
     },
 });

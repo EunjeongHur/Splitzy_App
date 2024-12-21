@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Picker } from "@react-native-picker/picker";
 import { Appbar, Text, TextInput, Button, ActivityIndicator, Card, Menu, IconButton, List } from "react-native-paper";
 
-export default function AddExpenseScreen({ route, navigation } : any) {
+export default function AddExpenseScreen({ route, navigation }: any) {
     const { groupId, token } = route.params;
     const [description, setDescription] = useState("");
     const [amount, setAmount] = useState("");
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     card: {
-        margin: 10 ,
+        margin: 10,
         flex: 1,
     },
     cardContent: {
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     },
     addButton: {
         marginTop: 16,
-        backgroundColor: "#0077b6",
+        backgroundColor: "#282a35",
     },
     addButtonContent: {
         paddingVertical: 5,
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#0077b6",
     },
     ButtonArea: {
-        flex: 1, 
+        flex: 1,
         justifyContent: "flex-end",
         marginBottom: 5,
     },

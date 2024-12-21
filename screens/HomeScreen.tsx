@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { fetchGroups, Group } from "../services/apiService";
 import { useAuth } from "../src/context/AuthContext";
 import { ActivityIndicator, Text, Button, Card, IconButton, FAB } from "react-native-paper";
+import colors from "../utils/colors";
 
 export default function HomeScreen({ navigation }: { navigation: any }) {
     const [groups, setGroups] = useState<Group[]>([]);
@@ -42,7 +43,6 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
             <Card.Content>
                 <View style={styles.groupHeader}>
                     <Text style={styles.groupName}>{item.name}</Text>
-                    {/* <IconButton icon="chevron-right" onPress={() => navigation.navigate("GroupDetails", { groupId: item.id, token: token })} /> */}
                 </View>
                 <Text style={styles.groupDetails}>Total: ${item.total}</Text>
             </Card.Content>
@@ -57,11 +57,13 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
                 </Text>
                 <FAB
                     icon="plus"
+                    color={colors.secondary}
+                    style={styles.createGroupButton}
                     onPress={() => navigation.navigate("CreateGroup")}
                 />
             </View>
             {loading ? (
-                <ActivityIndicator animating={true} size="large" color="#6200ee" />
+                <ActivityIndicator animating={true} size="large" color={colors.secondary} />
             ) : (
                 <FlatList
                     data={groups}
@@ -92,7 +94,7 @@ const styles = StyleSheet.create({
     groupCard: {
         marginVertical: 8,
         borderRadius: 8,
-        backgroundColor: "#ffffff", // Neutral white for card background
+        backgroundColor: colors.white,
         shadowColor: "#000",
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -120,9 +122,11 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     createGroupButton: {
-        marginTop: 16,
-        paddingVertical: 10,
-        backgroundColor: "#0077b6", // Softer blue tone
-        borderRadius: 8,
+        backgroundColor: colors.primary,
+        borderRadius: 25,
+        width: 50,
+        height: 50,
+        justifyContent: "center",
+        alignItems: "center",
     },
 });
