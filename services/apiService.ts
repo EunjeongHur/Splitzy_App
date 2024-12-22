@@ -39,10 +39,6 @@ export const logout = async () => {
 	return response.status === 200;
 };
 
-// export const createGroup = async (groupName: string, memberIds: number[]) => {
-// 	const response = await api.post("/groups", { groupName, memberIds });
-// 	return response.data;
-// };
 
 export const searchUsers = async (token: string, query: string) => {
 	const response = await api.get(
@@ -69,10 +65,14 @@ export const sendGroupInvitation = async (token: string, groupName: string, invi
 }
 
 
-// export const getFriends = async (userId: number) => {
-// 	const response = await api.get(`/friends/${userId}`);
-// 	return response;
-// }
+export const deleteGroup = async (groupId: number, token: string) => {
+	const response = await api.delete(`/groups/${groupId}/delete`, {
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	});
+	return response.data;
+}
 
 export const addExpense = async (group_id: number, token: string, amount: number, description: string, selectedPaidBy: number) => {
     const response = await api.post(

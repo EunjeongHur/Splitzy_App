@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from "react";
-import { View, FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import { View, FlatList, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { fetchGroupDetails } from "../services/apiService";
-import { Appbar, Text, Button, Divider } from 'react-native-paper';
+import { fetchGroupDetails, deleteGroup } from "../services/apiService";
+import { Appbar, Text, Button, Divider, Menu, Dialog } from 'react-native-paper';
 import colors from "../utils/colors";
 import { Platform } from "react-native";
 
@@ -12,6 +12,23 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
     const [groupDetails, setGroupDetails] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const MORE_ICON = Platform.OS === 'ios' ? 'dots-horizontal' : 'dots-vertical';
+    const [menuVisible, setMenuVisible] = useState(false);
+    const [dialogVisible, setDialogVisible] = useState(false);
+
+    const handleDeleteGroup = async () => {
+        try {
+            const response = await deleteGroup(groupId, token);
+            if (response.success) {
+                setDialogVisible(false);
+                navigation.goBack();
+            } else {
+                Alert.alert("Error", "Failed to delete group");
+            }
+        } catch (error) {
+            console.error("Failed to delete group:", error);
+            Alert.alert("Error", "Failed to delete group");
+        }
+    };
 
     const getGroupDetails = async () => {
         try {
@@ -29,7 +46,6 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
             getGroupDetails();
         }, [])
     );
-
 
     const renderExpense = ({ item, index }: any) => {
         const isNewDay =
@@ -67,10 +83,37 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
                 <Appbar.BackAction
                     onPress={() => navigation.goBack()}
                 />
-                <Appbar.Action
-                    icon={MORE_ICON}
-                    onPress={() => console.log("More options")}
-                />
+                <Menu
+                    visible={menuVisible}
+                    onDismiss={() => setMenuVisible(false)}
+                    anchor={
+                        <Appbar.Action
+                            icon={MORE_ICON}
+                            onPress={() => setMenuVisible(true)}
+                        />
+                    }
+                    style={{ marginTop:80 }}
+                    contentStyle={{
+                        backgroundColor: colors.white, 
+                        borderRadius: 8, 
+                    }}
+                >
+                    <Menu.Item
+                        onPress={() => {
+                            setMenuVisible(false);
+                            navigation.navigate("Summary", { groupId });
+                        }}
+                        title="View Summary"
+                    />
+                    <Menu.Item
+                        onPress={() => {
+                            setMenuVisible(false);
+                            setDialogVisible(true)
+                        }} // Open dialog
+                        title="Delete"
+                        titleStyle={{ color: colors.danger }}
+                    />
+                </Menu>
             </Appbar.Header>
 
             {/* Group Info section */}
@@ -139,6 +182,33 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
                     contentContainerStyle={{ flexGrow: 1 }}
                 />
             </View>
+            {/* <Portal> */}
+                    <Dialog 
+                        visible={dialogVisible} 
+                        onDismiss={() => setDialogVisible(false)}
+                        style={{ backgroundColor: colors.white }}
+                    >
+                        <Dialog.Title>Delete Group</Dialog.Title>
+                        <Dialog.Content>
+                            <Text>{"Are you sure you want to delete this group?\nThis action cannot be undone."}</Text>
+                        </Dialog.Content>
+                        <Dialog.Actions>
+                            <Button 
+                                onPress={() => setDialogVisible(false)}
+                                mode="text"
+                                theme={{ colors: { primary: colors.secondary } }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button 
+                                onPress={handleDeleteGroup} mode="contained" 
+                                style={styles.deleteButton}
+                            >
+                                Delete
+                            </Button>
+                        </Dialog.Actions>
+                    </Dialog>
+                {/* </Portal> */}
         </View>
     );
 }
@@ -152,6 +222,9 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
+    },
+    menuStyle: {
+        // backgroundColor: colors.white,
     },
     noExpensesContainer: {
         flex: 1,
@@ -229,5 +302,11 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         fontSize: 18,
         color: colors.black,
+    },
+    deleteButton: {
+        borderRadius: 15,
+        paddingHorizontal: 5,
+        backgroundColor: colors.danger,
+        marginLeft: 8,
     },
 });

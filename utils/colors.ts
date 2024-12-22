@@ -5,6 +5,7 @@ const colors = {
 	white: "#ffffff", // white #ffffff
 	black: "#000000", // black #000000
 	gray: "#454645", // dark grey #454645
+	danger: "#962619" // red #962619
 };
 
 export default colors;

@@ -88,7 +88,7 @@ export default function AddExpenseScreen({ route, navigation }: any) {
                         onChangeText={setAmount}
                         keyboardType="numeric"
                         style={styles.input}
-                        theme={{ colors: { primary: "#282a35" } }}
+                        theme={{ colors: { primary: colors.black } }}
                     />
                     <Text
                         variant="labelLarge"
@@ -97,7 +97,7 @@ export default function AddExpenseScreen({ route, navigation }: any) {
                         Paid By
                     </Text>
                     <List.Accordion
-                        theme={{ colors: { primary: "#282a35" } }}
+                        theme={{ colors: { primary: colors.black } }}
                         title={
                             members.find((member) => member.user_id === selectedPaidBy)?.user_name ||
                             "Select Member"
@@ -194,9 +194,10 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         borderBottomWidth: 1,
         borderBottomColor: "#282a35",
+        backgroundColor: colors.white,
     },
     selectedItem: {
-        backgroundColor: "#e8f4ff",
+        backgroundColor: colors.tertiary,
     },
     unselectedItem: {
         backgroundColor: "#ffffff",
