@@ -1,12 +1,12 @@
 # 📱 Splitzy_App
 
-Splitzy is a mobile application built with **React Native** to simplify group expense tracking and cost sharing. This repository contains the **front-end code** for the app, providing a user-friendly interface and seamless interaction with the backend API.
+Splitzy is a mobile application built with **React Native** to simplify group expense tracking and cost sharing.<br><br>This repository contains the **front-end code** for the app, providing a user-friendly interface and seamless interaction with the backend API.
 
 ---
 
 ## 💡 Fun Fact
 
-Did you know? The name **Splitzy** comes from combining **"Split"** and **"Easy"**, representing how the app makes splitting expenses easy for everyone!
+Did you know?<br><br>The name **Splitzy** comes from combining **"Split"** and **"Easy"**, representing how the app makes splitting expenses easy for everyone!
 
 ---
 
