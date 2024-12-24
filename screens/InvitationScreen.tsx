@@ -134,14 +134,28 @@ const InvitationScreen = ({ updateBadge }: { updateBadge: (count: number) => voi
             <View style={styles.mainContainer}>
                 {loading ? (
                     <ActivityIndicator animating={true} size="large" color="#6200ee" />
-                ) : invitations.length > 0 ? (
+                ) : invitations && invitations.length > 0 ? (
                     <FlatList
                         data={invitations}
                         keyExtractor={(item) => item.invitation_id.toString()}
                         renderItem={renderInvitationItem}
                     />
                 ) : (
-                    <Text style={styles.noInvitationsText}>No invitations available.</Text>
+                    <View style={styles.noInvitationsContainer}>
+                        <Text
+                            variant="displayMedium"
+                            style={styles.noInvitationsEmpText}
+                        >
+                            Oops!
+                        </Text>
+                        <Text
+                            variant="headlineMedium"
+                            style={styles.noInvitationsText}
+                        >
+                            {"\nYou're all caught up!\nNo invitations at the moment."}
+                        </Text>
+
+                    </View>
                 )}
             </View>
         </View>
@@ -154,6 +168,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.white,
     },
     mainContainer: {
+        flex: 1,
         padding: 16,
     },
     AppBarHeader: {
@@ -193,10 +208,21 @@ const styles = StyleSheet.create({
         borderColor: colors.danger,
         backgroundColor: colors.white,
     },
+    noInvitationsContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    noInvitationsEmpText: {
+        fontWeight: "bold",
+        textAlign: "center",
+        color: colors.secondary,
+    },
     noInvitationsText: {
         textAlign: "center",
-        color: "#757575",
-        fontSize: 16,
+        color: colors.black,
+        fontSize: 20,
+        fontWeight: "bold",
     },
 });
 

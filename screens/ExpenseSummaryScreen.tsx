@@ -19,6 +19,7 @@ export default function ExpenseSummaryScreen({ route, navigation }: any) {
     useFocusEffect(
         useCallback(() => {
             const loadGroups = async () => {
+                setLoading(true);
                 try {
                     if (!token) {
                         console.error("Token is null");
@@ -37,6 +38,8 @@ export default function ExpenseSummaryScreen({ route, navigation }: any) {
                     if (!handleAuthError(error, setToken)) {
                         console.error("Failed to load groups:", error);
                     }
+                } finally {
+                    setLoading(false);
                 }
             };
 
@@ -129,50 +132,10 @@ export default function ExpenseSummaryScreen({ route, navigation }: any) {
 
             {/* Main Content */}
             <View style={styles.MainContainer}>
-                {/* Group Selector */}
-                <View style={styles.groupSelector}>
-
-                    <List.Accordion
-                        theme={{ colors: { primary: colors.black } }}
-                        title={
-                            selectedGroupId
-                                ? groups.find((group) => group.id === selectedGroupId)?.name || "Select a Group"
-                                : "Select a Group"
-                        }
-                        expanded={accordionExpanded}
-                        onPress={() => setAccordionExpanded(!accordionExpanded)}
-                        left={(props) => <List.Icon {...props} icon="account-multiple" />}
-                        style={styles.accordion}
-                    >
-                        {groups.map((group) => (
-                            <List.Item
-                                key={group.id}
-                                title={group.name}
-                                onPress={() => {
-                                    setSelectedGroupId(group.id);
-                                    setAccordionExpanded(false);
-                                }}
-                                style={[
-                                    styles.accordionItem,
-                                    selectedGroupId === group.id && styles.selectedAccordionItem,
-                                ]}
-                            />
-                        ))}
-                    </List.Accordion>
-                </View>
-
-
-                {/* Settlement List */}
                 {loading ? (
                     <ActivityIndicator size="large" color={colors.secondary} />
-                ) : settlements.length > 0 ? (
-                    <FlatList
-                        data={settlements}
-                        keyExtractor={(item) => item.id.toString()}
-                        renderItem={renderSettlementItem}
-                    />
-                ) : (
-                    <View style={styles.noSettlementContainer}>
+                ) : groups.length === 0 ? (
+                    <View style={styles.noGroupContainer}>
                         <Text
                             variant="displayMedium"
                             style={styles.noSettlementEmpText}
@@ -181,33 +144,99 @@ export default function ExpenseSummaryScreen({ route, navigation }: any) {
                         </Text>
                         <Text
                             variant="headlineMedium"
-                            style={styles.noSettlementText}
+                            style={styles.noGroupText}
                         >
-                            {"\nNo settlement details available here\nTap the button to add new expense!\n"}
+                            {"\nNo groups available\nPlease create a group to get started!\n"}
                         </Text>
                         <Button
                             mode="contained"
-                            onPress={() => navigation.navigate("Home", {
-                                screen: "AddExpense",
-                                params: {
-                                    selectedGroupId,
-                                    token,
-                                }
-                            })}
-                            style={styles.addExpenseButton}
+                            onPress={() => navigation.navigate("Home", { screen: "CreateGroup" })}
+                            style={styles.createGroupButton}
                             theme={{
                                 colors: {
-                                    primary:
-                                        colors.primary,
+                                    primary: colors.primary,
                                     onPrimary: colors.secondary,
                                 }
                             }}
                         >
-                            Add Expense
+                            Create Group
                         </Button>
                     </View>
-                )}
+                ) : (
+                    <>
+                        {/* Group Selector */}
+                        <List.Accordion
+                            theme={{ colors: { primary: colors.black } }}
+                            title={
+                                selectedGroupId
+                                    ? groups.find((group) => group.id === selectedGroupId)?.name || "Select a Group"
+                                    : "Select a Group"
+                            }
+                            expanded={accordionExpanded}
+                            onPress={() => setAccordionExpanded(!accordionExpanded)}
+                            left={(props) => <List.Icon {...props} icon="account-multiple" />}
+                            style={styles.accordion}
+                        >
+                            {groups.map((group) => (
+                                <List.Item
+                                    key={group.id}
+                                    title={group.name}
+                                    onPress={() => {
+                                        setSelectedGroupId(group.id);
+                                        setAccordionExpanded(false);
+                                    }}
+                                    style={[
+                                        styles.accordionItem,
+                                        selectedGroupId === group.id && styles.selectedAccordionItem,
+                                    ]}
+                                />
+                            ))}
+                        </List.Accordion>
 
+                        {/* Settlement List */}
+                        {settlements.length === 0 ? (
+                            <View style={styles.noSettlementContainer}>
+                                <Text
+                                    variant="displayMedium"
+                                    style={styles.noSettlementEmpText}
+                                >
+                                    Oops!
+                                </Text>
+                                <Text
+                                    variant="headlineMedium"
+                                    style={styles.noSettlementText}
+                                >
+                                    {"\nNo settlement details available here\nTap the button to add new expense!\n"}
+                                </Text>
+                                <Button
+                                    mode="contained"
+                                    onPress={() => navigation.navigate("Home", {
+                                        screen: "AddExpense",
+                                        params: {
+                                            selectedGroupId,
+                                            token,
+                                        }
+                                    })}
+                                    style={styles.addExpenseButton}
+                                    theme={{
+                                        colors: {
+                                            primary: colors.primary,
+                                            onPrimary: colors.secondary,
+                                        }
+                                    }}
+                                >
+                                    Add Expense
+                                </Button>
+                            </View>
+                        ) : (
+                            <FlatList
+                                data={settlements}
+                                keyExtractor={(item) => item.id.toString()}
+                                renderItem={renderSettlementItem}
+                            />
+                        )}
+                    </>
+                )}
             </View>
         </View>
     );
@@ -225,11 +254,13 @@ const styles = StyleSheet.create({
     },
     MainContainer: {
         padding: 16,
-        // paddingHorizontal: 16,
-        // backgroundColor: colors.white,
         flex: 1,
     },
-    title: { fontSize: 24, fontWeight: "bold", marginBottom: 16 },
+    title: {
+        fontSize: 24,
+        fontWeight: "bold",
+        marginBottom: 16
+    },
     accordion: {
         backgroundColor: colors.white,
         borderRadius: 8,
@@ -242,9 +273,9 @@ const styles = StyleSheet.create({
     selectedAccordionItem: {
         backgroundColor: colors.tertiary,
     },
-    groupSelector: {
-        // flex: 0.3,
-        // marginBottom: 20
+    createGroupButton: {
+        marginTop: 16,
+        backgroundColor: colors.primary,
     },
     addExpenseButton: {
         marginTop: 16,
@@ -287,4 +318,16 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         textAlign: "center"
     },
+    noGroupContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    noGroupText: {
+        fontSize: 20,
+        color: colors.black,
+        fontWeight: "bold",
+        textAlign: "center",
+    },
+
 });

@@ -3,7 +3,7 @@ import { View, FlatList, StyleSheet, } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { fetchGroups, Group } from "../services/apiService";
 import { useAuth } from "../src/context/AuthContext";
-import { ActivityIndicator, Text, Card, Appbar } from "react-native-paper";
+import { ActivityIndicator, Text, Card, Appbar, Button } from "react-native-paper";
 import colors from "../utils/colors";
 import { handleAuthError } from "../utils/authUtils";
 
@@ -61,38 +61,45 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
                     style={styles.createGroupButton}
                     onPress={() => navigation.navigate("CreateGroup")}
                 />
-                {/* <FAB
-                    icon="plus"
-                    color={colors.secondary}
-                    style={styles.createGroupButton}
-                    onPress={() => navigation.navigate("CreateGroup")}
-                /> */}
             </Appbar.Header>
-            {/* <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                <Text variant="headlineMedium">
-                    Your Groups
-                </Text>
-                <FAB
-                    icon="plus"
-                    color={colors.secondary}
-                    style={styles.createGroupButton}
-                    onPress={() => navigation.navigate("CreateGroup")}
-                />
-            </View> */}
             <View style={styles.MainContainer}>
                 {loading ? (
                     <ActivityIndicator animating={true} size="large" color={colors.secondary} />
-                ) : (
+                ) : groups && groups.length > 0 ? (
                     <FlatList
                         data={groups}
                         keyExtractor={(item) => item.id.toString()}
                         renderItem={renderGroup}
-                        ListEmptyComponent={
-                            <Text style={styles.emptyText}>
-                                No groups found. Create one!
-                            </Text>
-                        }
                     />
+                ) : (
+                    <View style={styles.noGroupContainer}>
+                        <Text
+                            variant="displayMedium"
+                            style={styles.noGroupEmpText}
+                        >
+                            Oops!
+                        </Text>
+                        <Text
+                            variant="headlineMedium"
+                            style={styles.noGroupText}
+                        >
+                            {"\nNo groups available\nPlease create a group to get started!\n"}
+                        </Text>
+                        <Button
+                            mode="contained"
+                            onPress={() => navigation.navigate("Home", { screen: "CreateGroup" })}
+                            style={styles.createGroupButton2}
+                            theme={{
+                                colors: {
+                                    primary: colors.primary,
+                                    onPrimary: colors.secondary,
+                                }
+                            }}
+                        >
+                            Create Group
+                        </Button>
+                    </View>
+
                 )}
             </View>
         </View>
@@ -102,7 +109,7 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.white, // Lighter background color
+        backgroundColor: colors.white,
     },
     AppBarHeader: {
         backgroundColor: colors.white,
@@ -110,6 +117,7 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     MainContainer: {
+        flex: 1,
         padding: 16,
     },
     title: {
@@ -155,4 +163,24 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
+    noGroupEmpText: {
+        fontWeight: "bold",
+        textAlign: "center",
+        color: colors.secondary,
+    },
+    noGroupText: {
+        fontSize: 20,
+        color: colors.black,
+        fontWeight: "bold",
+        textAlign: "center",
+    },
+    noGroupContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    createGroupButton2: {
+        marginTop: 16,
+        backgroundColor: colors.primary,
+    }
 });
