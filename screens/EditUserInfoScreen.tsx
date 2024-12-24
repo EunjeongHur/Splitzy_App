@@ -1,25 +1,38 @@
 import React, { useState } from "react";
-import { StyleSheet, Alert, View } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { login } from "../services/apiService";
+import { Alert, StyleSheet, View } from "react-native";
+import { TextInput, Button, Text, Appbar } from "react-native-paper";
+import { updateUserInformation } from "../services/apiService";
+import colors from "../utils/colors";
 import { useAuth } from "../src/context/AuthContext";
-import { TextInput, Button, Appbar, Text } from "react-native-paper";
-import colors from "../utils/colors"
+import { handleAuthError } from "../utils/authUtils";
 
-const LoginScreen = ({ navigation }: { navigation: any }) => {
-    const [email, setEmail] = useState<string>("");
+export default function EditUserInfoScreen({ route, navigation }: any) {
+    const { token, userInfo } = route.params;
+    const [firstName, setFirstName] = useState<string>(userInfo.firstName || "");
+    const [lastName, setLastName] = useState<string>(userInfo.lastName || "");
+    const [email, setEmail] = useState<string>(userInfo.email || "");
+    const [username, setUsername] = useState<string>(userInfo.username || "");
     const [password, setPassword] = useState<string>("");
-    const { setToken } = useAuth();
     const [showPassword, setShowPassword] = useState<boolean>(false);
+    const { setToken } = useAuth();
 
-    const handleLogin = async () => {
+
+    const handleSave = async () => {
+        if (!firstName || !lastName || !email || !username) {
+            Alert.alert("Error", "All fields are required!");
+            return;
+        }
+
         try {
-            const data = await login(email, password);
-            setToken(data.token);
-            await AsyncStorage.setItem("userId", data.user.id.toString());
+            const updatedInfo = { firstName, lastName, email, username };
+            await updateUserInformation(token, updatedInfo);
+            Alert.alert("Success", "Your information has been updated successfully!");
+            navigation.navigate("UserInfo", { refresh: true });
         } catch (error: any) {
-            console.error("Login failed:", error.message);
-            Alert.alert("Error", error.response?.data?.error || "Invalid credentials.");
+            if (!handleAuthError(error, setToken)) {
+                console.error("Failed to update user info:", error);
+                Alert.alert("Error", "Could not update your information. Please try again.");
+            }
         }
     };
 
@@ -28,27 +41,53 @@ const LoginScreen = ({ navigation }: { navigation: any }) => {
             {/* App Bar Section */}
             <Appbar.Header style={styles.AppBarHeader}>
                 <View style={styles.iconBackgroundContainer}>
-                    <Appbar.BackAction color={colors.black} onPress={() => navigation.navigate("Landing")} />
+                    <Appbar.BackAction color={colors.black} onPress={() => navigation.goBack()} />
                 </View>
             </Appbar.Header>
+
             <View style={styles.card}>
                 <View style={styles.cardContent}>
                     <Text variant="headlineMedium" style={styles.title}>
-                        Log in
+                        Edit Information
                     </Text>
                     <TextInput
-                        label="Email"
+                        label="First Name"
+                        value={firstName}
+                        onChangeText={setFirstName}
                         mode="outlined"
-                        value={email}
-                        onChangeText={setEmail}
                         style={styles.input}
                         theme={{ colors: { primary: colors.black } }}
                     />
                     <TextInput
-                        label="Password"
+                        label="Last Name"
+                        value={lastName}
+                        onChangeText={setLastName}
                         mode="outlined"
+                        style={styles.input}
+                        theme={{ colors: { primary: colors.black } }}
+                    />
+                    <TextInput
+                        label="Username"
+                        value={username}
+                        onChangeText={setUsername}
+                        mode="outlined"
+                        style={styles.input}
+                        theme={{ colors: { primary: colors.black } }}
+                    />
+                    <TextInput
+                        label="Email"
+                        value={email}
+                        onChangeText={setEmail}
+                        mode="outlined"
+                        keyboardType="email-address"
+                        style={styles.input}
+                        theme={{ colors: { primary: colors.black } }}
+                    />
+                    {/* <TextInput
+                        label="Password"
                         value={password}
                         onChangeText={setPassword}
+                        mode="outlined"
                         style={styles.input}
                         theme={{ colors: { primary: colors.black } }}
                         secureTextEntry={!showPassword}
@@ -58,10 +97,10 @@ const LoginScreen = ({ navigation }: { navigation: any }) => {
                                 onPress={() => setShowPassword((prev) => !prev)}
                             />
                         }
-                    />
+                    /> */}
                     <Button
                         mode="contained"
-                        onPress={handleLogin}
+                        onPress={handleSave}
                         style={styles.button}
                         theme={{
                             colors: {
@@ -70,15 +109,13 @@ const LoginScreen = ({ navigation }: { navigation: any }) => {
                             },
                         }}
                     >
-                        Log In
+                        Save
                     </Button>
                 </View>
             </View>
-
         </View>
-
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -122,5 +159,3 @@ const styles = StyleSheet.create({
         backgroundColor: colors.primary,
     },
 });
-
-export default LoginScreen;

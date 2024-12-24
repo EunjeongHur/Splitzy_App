@@ -8,10 +8,10 @@ import {
     FlatList,
 } from "react-native";
 import { searchUsers, sendGroupInvitation } from "../services/apiService";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Appbar, Text, TextInput, Button, Searchbar, ActivityIndicator, List, Chip } from "react-native-paper";
+import { Appbar, Text, Button, Searchbar, ActivityIndicator, List, Chip } from "react-native-paper";
 import { useAuth } from "../src/context/AuthContext";
 import colors from "../utils/colors";
+import { handleAuthError } from "../utils/authUtils";
 
 export default function CreateGroupScreen({ route, navigation }: any) {
     const { groupName } = route.params;
@@ -19,12 +19,17 @@ export default function CreateGroupScreen({ route, navigation }: any) {
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
-    const { token } = useAuth();
+    const { token, setToken } = useAuth();
 
     const handleSearch = async () => {
         setLoading(true);
-        if (!token || !searchQuery) {
+        if (!token) {
             console.error("Token is null");
+            setToken(null);
+            return;
+        }
+        if (!searchQuery) {
+            console.error("search query is empty")
             return;
         }
         try {
@@ -33,8 +38,10 @@ export default function CreateGroupScreen({ route, navigation }: any) {
                 (result: any) => !selectedUsers.some((user) => user.id === result.id)
             );
             setSearchResults(filteredResults);
-        } catch (error) {
-            console.error("Error searching users:", error);
+        } catch (error: any) {
+            if (!handleAuthError(error, setToken)) {
+                console.error("Error searching users:", error);
+            }
         } finally {
             setLoading(false);
         }
@@ -51,7 +58,12 @@ export default function CreateGroupScreen({ route, navigation }: any) {
     };
 
     const handleCreateGroup = async () => {
-        if (!groupName || selectedUsers.length === 0 || !token) {
+        if (!token) {
+            console.error("Token is null")
+            setToken(null);
+            return;
+        }
+        if (!groupName || selectedUsers.length === 0) {
             Alert.alert("Error", "Please enter a group name and select at least one member.");
             return;
         }
@@ -59,8 +71,10 @@ export default function CreateGroupScreen({ route, navigation }: any) {
         try {
             await sendGroupInvitation(token, groupName, selectedUsers.map((user) => user.id));
             navigation.navigate("GroupLists")
-        } catch (error) {
-            console.error("Error creating group:", error);
+        } catch (error: any) {
+            if (!handleAuthError(error, setToken)) {
+                console.error("Error creating group:", error);
+            }
         }
     };
 

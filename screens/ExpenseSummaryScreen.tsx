@@ -1,160 +1,19 @@
-// import React, { useState, useCallback, useEffect } from "react";
-// import { View, Text, StyleSheet, ActivityIndicator, Button, Alert, FlatList } from "react-native";
-// import { useFocusEffect } from "@react-navigation/native";
-// import { Picker } from "@react-native-picker/picker";
-// import { SafeAreaView } from "react-native-safe-area-context";
-// import { fetchSettlementDetails, fetchGroups, settleTransaction, undoTransaction } from "../services/apiService";
-// import { useAuth } from "../src/context/AuthContext";
-
-
-// export default function ExpenseSummaryScreen({ route, navigation }: any) {
-//     const [groups, setGroups] = useState<any[]>([]);
-//     const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
-//     const [settlements, setSettlements] = useState<any[]>([]);
-//     const [loading, setLoading] = useState<boolean>(false);
-//     const { token } = useAuth();
-
-//     const loadGroups = async () => {
-//         try {
-//             if (token) {
-//                 const groupList = await fetchGroups(token);
-//                 setGroups(groupList);
-//                 if (groupList.length > 0) setSelectedGroupId(groupList[0].id);
-//             } else {
-//                 console.error("Token is null");
-//             }
-//         } catch (error) {
-//             console.error("Failed to load groups:", error);
-//         } 
-//     };
-
-//     const loadSettlements = async () => {
-//         if (!selectedGroupId || !token) return;
-
-//         setLoading(true);
-//         try {
-//             const settlementData = await fetchSettlementDetails(selectedGroupId, token);
-//             setSettlements(settlementData.settlements);
-//         } catch (error) {
-//             console.error("Failed to fetch settlements:", error);
-//         } finally {
-//             setLoading(false);
-//         }
-//     };
-
-//     useFocusEffect(
-//         useCallback(() => {
-//             loadGroups();
-//         }, [])
-//     );
-
-//     useEffect(() => {
-//         loadSettlements();
-//     }, [selectedGroupId]);
-
-//     const handleSettleItem = async (settlementId: number, isSettled: boolean) => {
-//         try {
-//             if (!token) {
-//                 console.error("Token is null");
-//                 return;
-//             }
-    
-//             if (isSettled) {
-//                 // Undo settle
-//                 await undoTransaction(settlementId, token);
-//                 Alert.alert("Success", "Transaction marked as unsettled!");
-//             } else {
-//                 // Settle
-//                 await settleTransaction(settlementId, token);
-//                 Alert.alert("Success", "Transaction marked as settled!");
-//             }
-    
-//             setSettlements((prevSettlements) =>
-//                 prevSettlements.map((s) =>
-//                     s.id === settlementId ? { ...s, is_settled: isSettled ? 0 : 1 } : s
-//                 )
-//             );
-//         } catch (error) {
-//             console.error("Failed to process transaction:", error);
-//             Alert.alert("Error", "Could not update the transaction.");
-//         }
-//     };
-
-//     const renderSettlementItem = ({ item }: any) => (
-//         <View style={styles.settlementItem}>
-//             <Text style={item.is_settled ? styles.settledText : null}>
-//                 {item.from_user_name} → {item.to_user_name}: ${item.amount}
-//             </Text>
-//             <Button
-//                 title={item.is_settled ? "Undo" : "Settle"}
-//                 onPress={() => handleSettleItem(item.id, item.is_settled)}
-//             />
-//         </View>
-//     );
-
-//     return (
-//         <SafeAreaView style={styles.container}>
-//             <Text style={styles.title}>Expense Summary</Text>
-
-//             <View style={styles.pickerContainer}>
-//                 <Text style={styles.label}>Select a Group:</Text>
-//                 <Picker
-//                     selectedValue={selectedGroupId}
-//                     onValueChange={(itemValue) => setSelectedGroupId(itemValue)}
-//                     style={styles.picker}
-//                 >
-//                     {groups.map((group) => (
-//                         <Picker.Item key={group.id} label={group.name} value={group.id} />
-//                     ))}
-//                 </Picker>
-//             </View>
-
-//             {loading ? (
-//                 <ActivityIndicator size="large" color="#0000ff" />
-//             ) : settlements.length > 0 ? (
-//                 <FlatList
-//                     data={settlements}
-//                     keyExtractor={(item) => item.id.toString()}
-//                     renderItem={renderSettlementItem}
-//                 />
-//             ) : (
-//                 <Text>No settlement details available.</Text>
-//             )}
-//         </SafeAreaView>
-//     );
-// }
-
-// const styles = StyleSheet.create({
-//     container: { flex: 1, padding: 16 },
-//     title: { fontSize: 24, fontWeight: "bold", marginBottom: 16 },
-//     pickerContainer: { marginBottom: 20 },
-//     label: { fontSize: 16, marginBottom: 8 },
-//     picker: { height: 50, width: "100%" },
-//     sectionTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 12 },
-//     settlementItem: {
-//         flexDirection: "row",
-//         justifyContent: "space-between",
-//         alignItems: "center",
-//         paddingTop: 8,
-//         paddingBottom: 8,
-//         borderBottomWidth: 1,
-//         borderColor: "#ccc",
-//     },
-//     settledText: { textDecorationLine: "line-through", color: "gray" },
-// });
 import React, { useState, useCallback, useEffect } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, FlatList, Alert, Button } from "react-native";
+import { View, StyleSheet, ActivityIndicator, FlatList, Alert } from "react-native";
 import { fetchSettlementDetails, fetchGroups, settleTransaction, undoTransaction } from "../services/apiService";
 import { useFocusEffect } from "@react-navigation/native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../src/context/AuthContext";
+import { Text, Appbar, List, Button } from "react-native-paper";
+import colors from "../utils/colors";
+import { handleAuthError } from "../utils/authUtils";
 
-export default function ExpenseSummaryScreen({ route }: any) {
+export default function ExpenseSummaryScreen({ route, navigation }: any) {
     const [groups, setGroups] = useState<any[]>([]);
     const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
     const [settlements, setSettlements] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const { token } = useAuth();
+    const [accordionExpanded, setAccordionExpanded] = useState<boolean>(false);
+    const { token, setToken } = useAuth();
 
     // Load groups on screen focus
     useFocusEffect(
@@ -174,8 +33,10 @@ export default function ExpenseSummaryScreen({ route }: any) {
                     } else if (groupList.length > 0) {
                         setSelectedGroupId(groupList[0].id);
                     }
-                } catch (error) {
-                    console.error("Failed to load groups:", error);
+                } catch (error: any) {
+                    if (!handleAuthError(error, setToken)) {
+                        console.error("Failed to load groups:", error);
+                    }
                 }
             };
 
@@ -186,14 +47,20 @@ export default function ExpenseSummaryScreen({ route }: any) {
     // Load settlements whenever selectedGroupId changes
     useEffect(() => {
         const loadSettlements = async () => {
-            if (!selectedGroupId || !token) return;
+            if (!token) {
+                setToken(null);
+                return;
+            }
+            if (!selectedGroupId) return;
 
             setLoading(true);
             try {
                 const settlementData = await fetchSettlementDetails(selectedGroupId, token);
                 setSettlements(settlementData.settlements);
-            } catch (error) {
-                console.error("Failed to fetch settlements:", error);
+            } catch (error: any) {
+                if (!handleAuthError(error, setToken)) {
+                    console.error("Failed to fetch settlements:", error);
+                }
             } finally {
                 setLoading(false);
             }
@@ -211,10 +78,8 @@ export default function ExpenseSummaryScreen({ route }: any) {
 
             if (isSettled) {
                 await undoTransaction(settlementId, token);
-                Alert.alert("Success", "Transaction marked as unsettled!");
             } else {
                 await settleTransaction(settlementId, token);
-                Alert.alert("Success", "Transaction marked as settled!");
             }
 
             setSettlements((prevSettlements) =>
@@ -222,9 +87,11 @@ export default function ExpenseSummaryScreen({ route }: any) {
                     s.id === settlementId ? { ...s, is_settled: isSettled ? 0 : 1 } : s
                 )
             );
-        } catch (error) {
-            console.error("Failed to process transaction:", error);
-            Alert.alert("Error", "Could not update the transaction.");
+        } catch (error: any) {
+            if (!handleAuthError(error, setToken)) {
+                console.error("Failed to process transaction:", error);
+                Alert.alert("Error", "Could not update the transaction.");
+            }
         }
     };
 
@@ -234,58 +101,159 @@ export default function ExpenseSummaryScreen({ route }: any) {
                 {item.from_user_name} → {item.to_user_name}: ${item.amount}
             </Text>
             <Button
-                title={item.is_settled ? "Undo" : "Settle"}
+                mode="contained"
                 onPress={() => handleSettleItem(item.id, item.is_settled)}
-            />
+                theme={item.is_settled ? {
+                    colors: {
+                        primary: colors.white,
+                        onPrimary: colors.secondary
+                    }
+                } : {
+                    colors: {
+                        primary: colors.primary,
+                        onPrimary: colors.secondary,
+                    }
+                }}
+                style={item.is_settled ? styles.undoButton : null}
+            >{item.is_settled ? "Undo" : "Settle"}
+            </Button>
         </View>
     );
 
     return (
-        <SafeAreaView style={styles.container}>
-            <Text style={styles.title}>Expense Summary</Text>
+        <View style={styles.container}>
+            {/* App Bar Section */}
+            <Appbar.Header style={styles.AppBarHeader}>
+                <Appbar.Content title="Expense Summary" />
+            </Appbar.Header>
 
-            {/* Group Selector */}
-            <View style={styles.groupSelector}>
-                <Text style={styles.label}>Select a Group:</Text>
-                <FlatList
-                    horizontal
-                    data={groups}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={({ item }) => (
+            {/* Main Content */}
+            <View style={styles.MainContainer}>
+                {/* Group Selector */}
+                <View style={styles.groupSelector}>
+
+                    <List.Accordion
+                        theme={{ colors: { primary: colors.black } }}
+                        title={
+                            selectedGroupId
+                                ? groups.find((group) => group.id === selectedGroupId)?.name || "Select a Group"
+                                : "Select a Group"
+                        }
+                        expanded={accordionExpanded}
+                        onPress={() => setAccordionExpanded(!accordionExpanded)}
+                        left={(props) => <List.Icon {...props} icon="account-multiple" />}
+                        style={styles.accordion}
+                    >
+                        {groups.map((group) => (
+                            <List.Item
+                                key={group.id}
+                                title={group.name}
+                                onPress={() => {
+                                    setSelectedGroupId(group.id);
+                                    setAccordionExpanded(false);
+                                }}
+                                style={[
+                                    styles.accordionItem,
+                                    selectedGroupId === group.id && styles.selectedAccordionItem,
+                                ]}
+                            />
+                        ))}
+                    </List.Accordion>
+                </View>
+
+
+                {/* Settlement List */}
+                {loading ? (
+                    <ActivityIndicator size="large" color={colors.secondary} />
+                ) : settlements.length > 0 ? (
+                    <FlatList
+                        data={settlements}
+                        keyExtractor={(item) => item.id.toString()}
+                        renderItem={renderSettlementItem}
+                    />
+                ) : (
+                    <View style={styles.noSettlementContainer}>
                         <Text
-                            onPress={() => setSelectedGroupId(item.id)}
-                            style={[
-                                styles.groupItem,
-                                selectedGroupId === item.id && styles.selectedGroup,
-                            ]}
+                            variant="displayMedium"
+                            style={styles.noSettlementEmpText}
                         >
-                            {item.name}
+                            Oops!
                         </Text>
-                    )}
-                    showsHorizontalScrollIndicator={false}
-                />
-            </View>
+                        <Text
+                            variant="headlineMedium"
+                            style={styles.noSettlementText}
+                        >
+                            {"\nNo settlement details available here\nTap the button to add new expense!\n"}
+                        </Text>
+                        <Button
+                            mode="contained"
+                            onPress={() => navigation.navigate("Home", {
+                                screen: "AddExpense",
+                                params: {
+                                    selectedGroupId,
+                                    token,
+                                }
+                            })}
+                            style={styles.addExpenseButton}
+                            theme={{
+                                colors: {
+                                    primary:
+                                        colors.primary,
+                                    onPrimary: colors.secondary,
+                                }
+                            }}
+                        >
+                            Add Expense
+                        </Button>
+                    </View>
+                )}
 
-            {/* Settlement List */}
-            {loading ? (
-                <ActivityIndicator size="large" color="#0000ff" />
-            ) : settlements.length > 0 ? (
-                <FlatList
-                    data={settlements}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={renderSettlementItem}
-                />
-            ) : (
-                <Text style={styles.noSettlementText}>No settlement details available.</Text>
-            )}
-        </SafeAreaView>
+            </View>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 16 },
+    container: {
+        flex: 1,
+        backgroundColor: colors.white,
+    },
+    AppBarHeader: {
+        backgroundColor: colors.white,
+        justifyContent: "space-between",
+        elevation: 5,
+    },
+    MainContainer: {
+        padding: 16,
+        // paddingHorizontal: 16,
+        // backgroundColor: colors.white,
+        flex: 1,
+    },
     title: { fontSize: 24, fontWeight: "bold", marginBottom: 16 },
-    groupSelector: { marginBottom: 20 },
+    accordion: {
+        backgroundColor: colors.white,
+        borderRadius: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.gray
+    },
+    accordionItem: {
+        backgroundColor: colors.white,
+    },
+    selectedAccordionItem: {
+        backgroundColor: colors.tertiary,
+    },
+    groupSelector: {
+        // flex: 0.3,
+        // marginBottom: 20
+    },
+    addExpenseButton: {
+        marginTop: 16,
+        backgroundColor: colors.primary,
+    },
+    undoButton: {
+        borderWidth: 1,
+        borderColor: colors.secondary,
+    },
     label: { fontSize: 16, marginBottom: 8 },
     groupItem: {
         marginRight: 10,
@@ -294,7 +262,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#ccc",
     },
-    selectedGroup: { backgroundColor: "#e0f7fa", borderColor: "#00acc1" },
     settlementItem: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -303,6 +270,21 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderColor: "#ccc",
     },
+    noSettlementContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
     settledText: { textDecorationLine: "line-through", color: "gray" },
-    noSettlementText: { textAlign: "center", marginTop: 20, color: "gray" },
+    noSettlementEmpText: {
+        fontWeight: "bold",
+        textAlign: "center",
+        color: colors.secondary,
+    },
+    noSettlementText: {
+        fontSize: 20,
+        color: colors.black,
+        fontWeight: "bold",
+        textAlign: "center"
+    },
 });

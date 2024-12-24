@@ -5,6 +5,8 @@ import { fetchGroupDetails, deleteGroup } from "../services/apiService";
 import { Appbar, Text, Button, Divider, Menu, Dialog } from 'react-native-paper';
 import colors from "../utils/colors";
 import { Platform } from "react-native";
+import { useAuth } from "../src/context/AuthContext"
+import { handleAuthError } from "../utils/authUtils";
 
 
 export default function GroupDetailsScreen({ route, navigation }: any) {
@@ -14,6 +16,7 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
     const MORE_ICON = Platform.OS === 'ios' ? 'dots-horizontal' : 'dots-vertical';
     const [menuVisible, setMenuVisible] = useState(false);
     const [dialogVisible, setDialogVisible] = useState(false);
+    const { setToken } = useAuth();
 
     const handleDeleteGroup = async () => {
         try {
@@ -24,9 +27,11 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
             } else {
                 Alert.alert("Error", "Failed to delete group");
             }
-        } catch (error) {
-            console.error("Failed to delete group:", error);
-            Alert.alert("Error", "Failed to delete group");
+        } catch (error: any) {
+            if (!handleAuthError(error, setToken)) {
+                console.error("Failed to delete group:", error);
+                Alert.alert("Error", "Failed to delete group");
+            }
         }
     };
 
@@ -34,8 +39,10 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
         try {
             const details = await fetchGroupDetails(groupId);
             setGroupDetails(details);
-        } catch (error) {
-            console.error("Failed to fetch group details:", error);
+        } catch (error: any) {
+            if (!handleAuthError(error, setToken)) {
+                console.error("Failed to fetch group details:", error);
+            }
         } finally {
             setLoading(false);
         }
@@ -92,10 +99,10 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
                             onPress={() => setMenuVisible(true)}
                         />
                     }
-                    style={{ marginTop:80 }}
+                    style={{ marginTop: 80 }}
                     contentStyle={{
-                        backgroundColor: colors.white, 
-                        borderRadius: 8, 
+                        backgroundColor: colors.white,
+                        borderRadius: 8,
                     }}
                 >
                     <Menu.Item
@@ -183,32 +190,32 @@ export default function GroupDetailsScreen({ route, navigation }: any) {
                 />
             </View>
             {/* <Portal> */}
-                    <Dialog 
-                        visible={dialogVisible} 
-                        onDismiss={() => setDialogVisible(false)}
-                        style={{ backgroundColor: colors.white }}
+            <Dialog
+                visible={dialogVisible}
+                onDismiss={() => setDialogVisible(false)}
+                style={{ backgroundColor: colors.white }}
+            >
+                <Dialog.Title>Delete Group</Dialog.Title>
+                <Dialog.Content>
+                    <Text>{"Are you sure you want to delete this group?\nThis action cannot be undone."}</Text>
+                </Dialog.Content>
+                <Dialog.Actions>
+                    <Button
+                        onPress={() => setDialogVisible(false)}
+                        mode="text"
+                        theme={{ colors: { primary: colors.secondary } }}
                     >
-                        <Dialog.Title>Delete Group</Dialog.Title>
-                        <Dialog.Content>
-                            <Text>{"Are you sure you want to delete this group?\nThis action cannot be undone."}</Text>
-                        </Dialog.Content>
-                        <Dialog.Actions>
-                            <Button 
-                                onPress={() => setDialogVisible(false)}
-                                mode="text"
-                                theme={{ colors: { primary: colors.secondary } }}
-                            >
-                                Cancel
-                            </Button>
-                            <Button 
-                                onPress={handleDeleteGroup} mode="contained" 
-                                style={styles.deleteButton}
-                            >
-                                Delete
-                            </Button>
-                        </Dialog.Actions>
-                    </Dialog>
-                {/* </Portal> */}
+                        Cancel
+                    </Button>
+                    <Button
+                        onPress={handleDeleteGroup} mode="contained"
+                        style={styles.deleteButton}
+                    >
+                        Delete
+                    </Button>
+                </Dialog.Actions>
+            </Dialog>
+            {/* </Portal> */}
         </View>
     );
 }

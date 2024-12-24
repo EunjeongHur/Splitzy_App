@@ -5,7 +5,7 @@ import {
     KeyboardAvoidingView,
     Platform,
 } from "react-native";
-import { Appbar, Text, TextInput, Button, Surface } from "react-native-paper";
+import { Appbar, Text, TextInput, Button } from "react-native-paper";
 import colors from "../utils/colors";
 
 export default function CreateGroupScreen({ navigation }: { navigation: any }) {
@@ -45,10 +45,12 @@ export default function CreateGroupScreen({ navigation }: { navigation: any }) {
                     mode="outlined"
                     value={groupName}
                     onChangeText={setgroupName}
-                    theme={{ colors: { 
-                        primary: colors.black 
-                        
-                    } }}
+                    theme={{
+                        colors: {
+                            primary: colors.black
+
+                        }
+                    }}
                     style={styles.groupNameInput}
                 />
             </View>

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Alert, FlatList } from "react-native";
 import { addExpense, fetchGroupMembers } from "../services/apiService";
-import { Appbar, Text, TextInput, Button, ActivityIndicator, Card, Menu, IconButton, List } from "react-native-paper";
+import { handleAuthError } from "../utils/authUtils";
+import { Appbar, Text, TextInput, Button, ActivityIndicator, List } from "react-native-paper";
 import colors from "../utils/colors";
+import { useAuth } from "../src/context/AuthContext"
 
 export default function AddExpenseScreen({ route, navigation }: any) {
     const { groupId, token } = route.params;
@@ -12,18 +14,22 @@ export default function AddExpenseScreen({ route, navigation }: any) {
     const [selectedPaidBy, setSelectedPaidBy] = useState<number | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [expanded, setExpanded] = useState(false);
+    const { setToken } = useAuth();
 
     useEffect(() => {
         const loadMembers = async () => {
             try {
                 const membersData = await fetchGroupMembers(groupId);
                 setMembers(membersData);
+
                 if (membersData.length > 0) {
                     setSelectedPaidBy(membersData[0].user_id);
                 }
-            } catch (error) {
-                console.error("Failed to fetch members:", error);
-                Alert.alert("Error", "Failed to load group members");
+            } catch (error: any) {
+                if (!handleAuthError(error, setToken)) {
+                    console.error("Failed to fetch members:", error);
+                    Alert.alert("Error", "Failed to load group members");
+                }
             } finally {
                 setLoading(false);
             }
@@ -47,9 +53,11 @@ export default function AddExpenseScreen({ route, navigation }: any) {
             } else {
                 Alert.alert("Error", "Failed to add expense");
             }
-        } catch (error) {
-            console.error("Error adding expense:", error);
-            Alert.alert("Error", "An error occurred while adding the expense");
+        } catch (error: any) {
+            if (!handleAuthError(error, setToken)) {
+                console.error("Error adding expense: ", error);
+                Alert.alert("Error", "An error occurred while adding the expense");
+            }
         }
     };
 
@@ -151,7 +159,7 @@ export default function AddExpenseScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#ffffff",
+        backgroundColor: colors.white,
     },
     iconBackgroundContainer: {
         backgroundColor: colors.primary,
@@ -184,7 +192,7 @@ const styles = StyleSheet.create({
     },
     input: {
         marginBottom: 16,
-        backgroundColor: "#ffffff",
+        backgroundColor: colors.white,
     },
     label: {
         fontWeight: "bold",
@@ -193,14 +201,14 @@ const styles = StyleSheet.create({
     accordion: {
         borderRadius: 8,
         borderBottomWidth: 1,
-        borderBottomColor: "#282a35",
+        borderBottomColor: colors.gray,
         backgroundColor: colors.white,
     },
     selectedItem: {
         backgroundColor: colors.tertiary,
     },
     unselectedItem: {
-        backgroundColor: "#ffffff",
+        backgroundColor: colors.white,
     },
     addButton: {
         marginTop: 16,

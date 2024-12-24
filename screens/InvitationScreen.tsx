@@ -1,25 +1,33 @@
-import React,  { useCallback, useState } from "react";
-import { View, Text, StyleSheet, Button, Alert, FlatList } from "react-native";
+import React, { useCallback, useState } from "react";
+import { View, StyleSheet, FlatList } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { fetchInvitations, acceptInvitation, declineInvitation } from "../services/apiService";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { handleAuthError } from "../utils/authUtils";
 import { useAuth } from "../src/context/AuthContext";
+import { Text, Card, Button, ActivityIndicator, Divider, Appbar } from "react-native-paper";
+import colors from "../utils/colors"
+import { useNavigation } from "@react-navigation/native";
 
-const InvitationScreen = () => {
+const InvitationScreen = ({ updateBadge }: { updateBadge: (count: number) => void }) => {
+    const navigation = useNavigation();
     const [invitations, setInvitations] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const { token } = useAuth();
+    const { token, setToken } = useAuth();
 
     const loadInvitations = async () => {
         try {
             if (token) {
                 const data = await fetchInvitations(token);
                 setInvitations(data);
+                updateBadge(data.length);
             } else {
                 console.error("Token is null");
+                setToken(null);
             }
-        } catch (error) {
-            console.error("Failed to fetch invitations:", error);
+        } catch (error: any) {
+            if (!handleAuthError(error, setToken)) {
+                console.error("Failed to fetch invitations:", error);
+            }
         } finally {
             setLoading(false);
         }
@@ -36,14 +44,20 @@ const InvitationScreen = () => {
             if (token) {
                 await acceptInvitation(invitationId, groupId, token);
                 setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
-                Alert.alert("Success", "You have accepted the invitation!");
+                alert("You have accepted the invitation!");
+                const parentNavigator = navigation.getParent();
+                if (parentNavigator) {
+                    parentNavigator.setParams({ refresh: true });
+                }
                 loadInvitations();
             } else {
                 console.error("Token is null");
             }
-        } catch (error) {
-            console.error("Failed to accept invitation:", error);
-            Alert.alert("Error", "Could not accept the invitation.");
+        } catch (error: any) {
+            if (!handleAuthError(error, setToken)) {
+                console.error("Failed to accept invitation:", error);
+                alert("Could not accept the invitation.");
+            }
         }
     };
 
@@ -52,79 +66,137 @@ const InvitationScreen = () => {
             if (token) {
                 await declineInvitation(invitationId, token);
                 setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
-                Alert.alert("Success", "You have declined the invitation.");
+                const parentNavigator = navigation.getParent();
+                if (parentNavigator) {
+                    parentNavigator.setParams({ refresh: true });
+                }
+                alert("You have declined the invitation.");
                 loadInvitations();
             } else {
                 console.error("Token is null");
             }
-        } catch (error) {
-            console.error("Failed to decline invitation:", error);
-            Alert.alert("Error", "Could not decline the invitation.");
+        } catch (error: any) {
+            if (!handleAuthError(error, setToken)) {
+                console.error("Failed to decline invitation:", error);
+                alert("Could not decline the invitation.");
+            }
         }
     };
 
     const renderInvitationItem = ({ item }: any) => (
-        <View style={styles.invitationItem}>
-            <Text style={styles.invitationText}>
-                {item.group_name}
-            </Text>
-            <Text style={styles.invitationText2}>
-                - Invited by {item.inviter_name}
-            </Text>
-            <View style={styles.buttonContainer}>
-                <Button title="Accept" onPress={() => handleAccept(item.invitation_id, item.group_id)} />
-                <Button title="Decline" onPress={() => handleDecline(item.invitation_id)} color="red" />
-            </View>
-        </View>
+        <Card style={styles.card}>
+            <Card.Content>
+                <Text variant="titleLarge" style={styles.invitationText}>
+                    {item.group_name}
+                </Text>
+                <Text variant="bodyMedium" style={styles.invitationText2}>
+                    Invited by {item.inviter_name}
+                </Text>
+                <Divider style={{ marginVertical: 8 }} />
+                <View style={styles.buttonContainer}>
+                    <Button
+                        mode="outlined"
+                        onPress={() => handleDecline(item.invitation_id)}
+                        style={styles.declineButton}
+                        theme={{
+                            colors: {
+                                primary: colors.danger,
+
+                            }
+                        }}
+                    >
+                        Decline
+                    </Button>
+                    <Button
+                        mode="contained"
+                        onPress={() => handleAccept(item.invitation_id, item.group_id)}
+                        theme={{
+                            colors: {
+                                primary: colors.primary,
+                            }
+                        }}
+                        textColor={colors.secondary}
+                        style={styles.acceptButton}
+                    >
+                        Accept
+                    </Button>
+                </View>
+            </Card.Content>
+        </Card>
     );
 
     return (
-        <SafeAreaView style={styles.container}>
-            <Text style={styles.title}>Invitations</Text>
-            {loading ? (
-                <Text>Loading...</Text>
-            ) : invitations.length > 0 ? (
-                <FlatList
-                    data={invitations}
-                    keyExtractor={(item) => item.invitation_id.toString()}
-                    renderItem={renderInvitationItem}
-                />
-            ) : (
-                <Text>No invitations available.</Text>
-            )}
-        </SafeAreaView>
+        <View style={styles.container}>
+            {/* App Bar Section */}
+            <Appbar.Header style={styles.AppBarHeader}>
+                <Appbar.Content title="Invitations" />
+            </Appbar.Header>
+            <View style={styles.mainContainer}>
+                {loading ? (
+                    <ActivityIndicator animating={true} size="large" color="#6200ee" />
+                ) : invitations.length > 0 ? (
+                    <FlatList
+                        data={invitations}
+                        keyExtractor={(item) => item.invitation_id.toString()}
+                        renderItem={renderInvitationItem}
+                    />
+                ) : (
+                    <Text style={styles.noInvitationsText}>No invitations available.</Text>
+                )}
+            </View>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: colors.white,
+    },
+    mainContainer: {
         padding: 16,
-        backgroundColor: "#fff",
+    },
+    AppBarHeader: {
+        backgroundColor: colors.white,
+        justifyContent: "space-between",
+        elevation: 5,
     },
     title: {
         fontSize: 24,
         fontWeight: "bold",
         marginBottom: 16,
+        textAlign: "center",
     },
-    invitationItem: {
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: "#ccc",
-        marginBottom: 8,
+    card: {
+        marginBottom: 16,
+        borderRadius: 16,
+        backgroundColor: colors.tertiary,
+        elevation: 1,
     },
     invitationText: {
-        fontSize: 16,
-        marginBottom: 8,
+        fontWeight: "bold",
+        marginBottom: 4,
     },
     invitationText2: {
-        fontSize: 14,
-        textAlign: "right",
-        marginBottom: 8,
+        color: "#757575",
     },
     buttonContainer: {
         flexDirection: "row",
         justifyContent: "space-between",
+        marginTop: 8,
+    },
+    acceptButton: {
+        flex: 0.48,
+    },
+    declineButton: {
+        flex: 0.48,
+        borderColor: colors.danger,
+        backgroundColor: colors.white,
+    },
+    noInvitationsText: {
+        textAlign: "center",
+        color: "#757575",
+        fontSize: 16,
     },
 });
 

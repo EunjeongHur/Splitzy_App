@@ -1,16 +1,17 @@
 import React, { useCallback, useState } from "react";
-import { View, FlatList, StyleSheet, TouchableOpacity, } from "react-native";
+import { View, FlatList, StyleSheet, } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { fetchGroups, Group } from "../services/apiService";
 import { useAuth } from "../src/context/AuthContext";
-import { ActivityIndicator, Text, Button, Card, IconButton, FAB } from "react-native-paper";
+import { ActivityIndicator, Text, Card, Appbar } from "react-native-paper";
 import colors from "../utils/colors";
+import { handleAuthError } from "../utils/authUtils";
 
 export default function HomeScreen({ navigation }: { navigation: any }) {
     const [groups, setGroups] = useState<Group[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const { token, setToken } = useAuth();
+
     const loadGroups = async () => {
         try {
             if (token) {
@@ -20,9 +21,10 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
                 console.error("Token is null");
                 setToken(null);
             }
-        } catch (error) {
-            console.error("Error fetching groups:", error);
-            setToken(null);
+        } catch (error: any) {
+            if (!handleAuthError(error, setToken)) {
+                console.error("Error fetching groups: ", error.message);
+            }
         } finally {
             setLoading(false);
         }
@@ -50,8 +52,23 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
     );
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+        <View style={styles.container}>
+            <Appbar.Header style={styles.AppBarHeader}>
+                <Appbar.Content title="Groups" />
+                <Appbar.Action
+                    icon='plus'
+                    color={colors.secondary}
+                    style={styles.createGroupButton}
+                    onPress={() => navigation.navigate("CreateGroup")}
+                />
+                {/* <FAB
+                    icon="plus"
+                    color={colors.secondary}
+                    style={styles.createGroupButton}
+                    onPress={() => navigation.navigate("CreateGroup")}
+                /> */}
+            </Appbar.Header>
+            {/* <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 <Text variant="headlineMedium">
                     Your Groups
                 </Text>
@@ -61,30 +78,39 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
                     style={styles.createGroupButton}
                     onPress={() => navigation.navigate("CreateGroup")}
                 />
+            </View> */}
+            <View style={styles.MainContainer}>
+                {loading ? (
+                    <ActivityIndicator animating={true} size="large" color={colors.secondary} />
+                ) : (
+                    <FlatList
+                        data={groups}
+                        keyExtractor={(item) => item.id.toString()}
+                        renderItem={renderGroup}
+                        ListEmptyComponent={
+                            <Text style={styles.emptyText}>
+                                No groups found. Create one!
+                            </Text>
+                        }
+                    />
+                )}
             </View>
-            {loading ? (
-                <ActivityIndicator animating={true} size="large" color={colors.secondary} />
-            ) : (
-                <FlatList
-                    data={groups}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={renderGroup}
-                    ListEmptyComponent={
-                        <Text style={styles.emptyText}>
-                            No groups found. Create one!
-                        </Text>
-                    }
-                />
-            )}
-        </SafeAreaView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: colors.white, // Lighter background color
+    },
+    AppBarHeader: {
+        backgroundColor: colors.white,
+        justifyContent: "space-between",
+        elevation: 5,
+    },
+    MainContainer: {
         padding: 16,
-        backgroundColor: "#fafafa", // Lighter background color
     },
     title: {
         fontWeight: "bold",
@@ -124,8 +150,8 @@ const styles = StyleSheet.create({
     createGroupButton: {
         backgroundColor: colors.primary,
         borderRadius: 25,
-        width: 50,
-        height: 50,
+        width: 40,
+        height: 40,
         justifyContent: "center",
         alignItems: "center",
     },
